@@ -13,7 +13,6 @@ function LocationPicker({ onPick }) {
   return null
 }
 
-// Helper to re-center the map whenever pinLocation changes via search
 function RecenterMap({ position }) {
   const map = useMap()
   useEffect(() => {
@@ -27,7 +26,9 @@ function RecenterMap({ position }) {
 function App() {
   const [location, setLocation] = useState(null)
   const [error, setError] = useState(null)
-  const [radius, setRadius] = useState(3)
+
+  const [radiusValue, setRadiusValue] = useState(3)
+  const [radiusUnit, setRadiusUnit] = useState('km') // 'km' or 'm'
 
   const [pinLocation, setPinLocation] = useState(null)
   const [searchText, setSearchText] = useState('')
@@ -35,6 +36,7 @@ function App() {
   const [searchError, setSearchError] = useState('')
 
   const [category, setCategory] = useState('roads')
+  const [customCategory, setCustomCategory] = useState('')
   const [description, setDescription] = useState('')
   const [mediaFile, setMediaFile] = useState(null)
   const [isAnonymous, setIsAnonymous] = useState(false)
@@ -62,7 +64,10 @@ function App() {
     )
   }, [])
 
-  // Search a place name and move the pin there using free OpenStreetMap search
+  // Convert whatever the user typed into meters, for the Circle component
+  const radiusInMeters =
+    radiusUnit === 'km' ? Number(radiusValue) * 1000 : Number(radiusValue)
+
   async function handleSearch(e) {
     e.preventDefault()
     if (!searchText.trim()) return
@@ -102,6 +107,12 @@ function App() {
       return
     }
 
+    const finalCategory = category === 'other' ? customCategory.trim() : category
+    if (category === 'other' && !finalCategory) {
+      setSubmitMessage('Please type the issue category.')
+      return
+    }
+
     setSubmitting(true)
     setSubmitMessage('')
 
@@ -127,7 +138,7 @@ function App() {
     }
 
     const { error: insertError } = await supabase.from('issues').insert({
-      category,
+      category: finalCategory,
       description,
       photo_url: mediaUrl,
       lat: pinLocation.lat,
@@ -143,6 +154,7 @@ function App() {
       setSubmitMessage('Issue reported successfully!')
       setDescription('')
       setMediaFile(null)
+      setCustomCategory('')
     }
   }
 
@@ -151,23 +163,21 @@ function App() {
       <h1>LocalPulse</h1>
       {error && <p className="error-text">{error}</p>}
 
-      {location && (
-        <div className="radius-control">
-          <label htmlFor="radius">Show issues within: </label>
-          <select
-            id="radius"
-            value={radius}
-            onChange={(e) => setRadius(Number(e.target.value))}
-          >
-            <option value={1}>1 km</option>
-            <option value={3}>3 km</option>
-            <option value={5}>5 km</option>
-            <option value={10}>10 km</option>
-          </select>
-        </div>
-      )}
+      <div className="radius-control">
+        <label>Show issues within: </label>
+        <input
+          type="number"
+          min="1"
+          value={radiusValue}
+          onChange={(e) => setRadiusValue(e.target.value)}
+          className="radius-input"
+        />
+        <select value={radiusUnit} onChange={(e) => setRadiusUnit(e.target.value)}>
+          <option value="m">meters</option>
+          <option value="km">km</option>
+        </select>
+      </div>
 
-      {/* Location search bar */}
       <form className="search-bar" onSubmit={handleSearch}>
         <input
           type="text"
@@ -195,11 +205,13 @@ function App() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; OpenStreetMap contributors'
             />
-            <Circle
-              center={[location.lat, location.lng]}
-              radius={radius * 1000}
-              pathOptions={{ color: 'blue', fillOpacity: 0.1 }}
-            />
+            {pinLocation && (
+              <Circle
+                center={[pinLocation.lat, pinLocation.lng]}
+                radius={radiusInMeters}
+                pathOptions={{ color: 'blue', fillOpacity: 0.1 }}
+              />
+            )}
             <LocationPicker onPick={setPinLocation} />
             <RecenterMap position={pinLocation} />
             {pinLocation && (
@@ -223,8 +235,21 @@ function App() {
             <option value="electricity">Electricity</option>
             <option value="safety">Safety</option>
             <option value="sanitation">Sanitation</option>
+            <option value="other">Other</option>
           </select>
         </div>
+
+        {category === 'other' && (
+          <div className="form-group">
+            <label>Specify the issue category</label>
+            <input
+              type="text"
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+              placeholder="e.g. Stray animals, Streetlight, Encroachment..."
+            />
+          </div>
+        )}
 
         <div className="form-group">
           <label>Description</label>
