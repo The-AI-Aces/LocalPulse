@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
 import './App.css'
 
 function App() {
@@ -28,8 +30,21 @@ function App() {
     <div>
       <h1>LocalPulse</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+
       {location ? (
-        <p>Your location: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}</p>
+        <MapContainer
+          center={[location.lat, location.lng]}
+          zoom={14}
+          style={{ height: '400px', width: '100%' }}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; OpenStreetMap contributors'
+          />
+          <Marker position={[location.lat, location.lng]}>
+            <Popup>You are here</Popup>
+          </Marker>
+        </MapContainer>
       ) : (
         <p>Detecting your location...</p>
       )}
