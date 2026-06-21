@@ -181,7 +181,21 @@ h2 {
   flex-direction: column;
   z-index: 999;
 }
+.camera-error {
+  margin: auto;
+  text-align: center;
+  color: white;
+  padding: 20px;
+}
 
+.camera-error button {
+  margin: 10px 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid white;
+  background: transparent;
+  color: white;
+}
 .camera-preview {
   flex: 1;
   width: 100%;
