@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import { supabase } from './supabaseClient'
 import CameraCapture from './CameraCapture'
 import './App.css'
-
+import MediaPreview from './MediaPreview'
 function LocationPicker({ onPick }) {
   useMapEvents({
     click(e) {
@@ -40,6 +40,7 @@ function App() {
 
   const [category, setCategory] = useState('roads')
   const [customCategory, setCustomCategory] = useState('')
+  const [pendingMedia, setPendingMedia] = useState(null)
   const [description, setDescription] = useState('')
   const [mediaFile, setMediaFile] = useState(null)
   const [isAnonymous, setIsAnonymous] = useState(false)
@@ -166,14 +167,28 @@ function App() {
       {error && <p className="error-text">{error}</p>}
 
       {showCamera && (
-        <CameraCapture
-          onCapture={(file) => {
-            setMediaFile(file)
-            setShowCamera(false)
-          }}
-          onClose={() => setShowCamera(false)}
-        />
-      )}
+  <CameraCapture
+    onCapture={(file) => {
+      setPendingMedia(file)
+      setShowCamera(false)
+    }}
+    onClose={() => setShowCamera(false)}
+  />
+)}
+
+{pendingMedia && (
+  <MediaPreview
+    file={pendingMedia}
+    onRetake={() => {
+      setPendingMedia(null)
+      setShowCamera(true)
+    }}
+    onConfirm={() => {
+      setMediaFile(pendingMedia)
+      setPendingMedia(null)
+    }}
+  />
+)}
 
       <div className="radius-control">
         <label>Show issues within: </label>
@@ -281,14 +296,14 @@ function App() {
             </button>
 
             <label className="media-btn">
-              Upload from Device
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={(e) => setMediaFile(e.target.files[0])}
-                hidden
-              />
-            </label>
+  Upload from Device
+  <input
+    type="file"
+    accept="image/*,video/*"
+    onChange={(e) => setPendingMedia(e.target.files[0])}
+    hidden
+  />
+</label>
           </div>
           {mediaFile && <p className="file-name">Selected: {mediaFile.name}</p>}
         </div>
