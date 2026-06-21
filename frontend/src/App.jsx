@@ -3,8 +3,9 @@ import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents } 
 import 'leaflet/dist/leaflet.css'
 import { supabase } from './supabaseClient'
 import CameraCapture from './CameraCapture'
-import './App.css'
 import MediaPreview from './MediaPreview'
+import './App.css'
+
 function LocationPicker({ onPick }) {
   useMapEvents({
     click(e) {
@@ -37,10 +38,10 @@ function App() {
   const [searchError, setSearchError] = useState('')
 
   const [showCamera, setShowCamera] = useState(false)
+  const [pendingMedia, setPendingMedia] = useState(null)
 
   const [category, setCategory] = useState('roads')
   const [customCategory, setCustomCategory] = useState('')
-  const [pendingMedia, setPendingMedia] = useState(null)
   const [description, setDescription] = useState('')
   const [mediaFile, setMediaFile] = useState(null)
   const [isAnonymous, setIsAnonymous] = useState(false)
@@ -105,8 +106,14 @@ function App() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+
     if (!pinLocation) {
       setSubmitMessage('Please pick a location first.')
+      return
+    }
+
+    if (!mediaFile) {
+      setSubmitMessage('Please add a photo or video before submitting.')
       return
     }
 
@@ -121,24 +128,22 @@ function App() {
 
     let mediaUrl = null
 
-    if (mediaFile) {
-      const fileName = `${Date.now()}_${mediaFile.name}`
-      const { error: uploadError } = await supabase.storage
-        .from('issue-photos')
-        .upload(fileName, mediaFile)
+    const fileName = `${Date.now()}_${mediaFile.name}`
+    const { error: uploadError } = await supabase.storage
+      .from('issue-photos')
+      .upload(fileName, mediaFile)
 
-      if (uploadError) {
-        setSubmitMessage('Media upload failed: ' + uploadError.message)
-        setSubmitting(false)
-        return
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('issue-photos')
-        .getPublicUrl(fileName)
-
-      mediaUrl = urlData.publicUrl
+    if (uploadError) {
+      setSubmitMessage('Media upload failed: ' + uploadError.message)
+      setSubmitting(false)
+      return
     }
+
+    const { data: urlData } = supabase.storage
+      .from('issue-photos')
+      .getPublicUrl(fileName)
+
+    mediaUrl = urlData.publicUrl
 
     const { error: insertError } = await supabase.from('issues').insert({
       category: finalCategory,
@@ -167,28 +172,28 @@ function App() {
       {error && <p className="error-text">{error}</p>}
 
       {showCamera && (
-  <CameraCapture
-    onCapture={(file) => {
-      setPendingMedia(file)
-      setShowCamera(false)
-    }}
-    onClose={() => setShowCamera(false)}
-  />
-)}
+        <CameraCapture
+          onCapture={(file) => {
+            setPendingMedia(file)
+            setShowCamera(false)
+          }}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
 
-{pendingMedia && (
-  <MediaPreview
-    file={pendingMedia}
-    onRetake={() => {
-      setPendingMedia(null)
-      setShowCamera(true)
-    }}
-    onConfirm={() => {
-      setMediaFile(pendingMedia)
-      setPendingMedia(null)
-    }}
-  />
-)}
+      {pendingMedia && (
+        <MediaPreview
+          file={pendingMedia}
+          onRetake={() => {
+            setPendingMedia(null)
+            setShowCamera(true)
+          }}
+          onConfirm={() => {
+            setMediaFile(pendingMedia)
+            setPendingMedia(null)
+          }}
+        />
+      )}
 
       <div className="radius-control">
         <label>Show issues within: </label>
@@ -289,21 +294,21 @@ function App() {
         </div>
 
         <div className="form-group">
-          <label>Add Photo or Video</label>
+          <label>Add Photo or Video (required)</label>
           <div className="media-buttons">
             <button type="button" className="media-btn" onClick={() => setShowCamera(true)}>
               Take Photo / Video
             </button>
 
             <label className="media-btn">
-  Upload from Device
-  <input
-    type="file"
-    accept="image/*,video/*"
-    onChange={(e) => setPendingMedia(e.target.files[0])}
-    hidden
-  />
-</label>
+              Upload from Device
+              <input
+                type="file"
+                accept="image/*,video/*"
+                onChange={(e) => setPendingMedia(e.target.files[0])}
+                hidden
+              />
+            </label>
           </div>
           {mediaFile && <p className="file-name">Selected: {mediaFile.name}</p>}
         </div>
