@@ -2,7 +2,7 @@
 create extension if not exists postgis;
 
 -- Profiles table: one row per user
-create table profiles (
+create table if not exists profiles (
   id uuid primary key references auth.users(id),
   name text,
   is_authority boolean default false,
@@ -10,7 +10,7 @@ create table profiles (
 );
 
 -- Issues table: the core civic reports
-create table issues (
+create table if not exists issues (
   id uuid primary key default gen_random_uuid(),
   reporter_id uuid references profiles(id),
   category text not null,
@@ -24,7 +24,7 @@ create table issues (
 );
 
 -- Comments on issues
-create table comments (
+create table if not exists comments (
   id uuid primary key default gen_random_uuid(),
   issue_id uuid references issues(id) on delete cascade,
   user_id uuid references profiles(id),
@@ -33,14 +33,14 @@ create table comments (
 );
 
 -- Upvotes: one row per (issue, user) pair, prevents double-voting
-create table upvotes (
+create table if not exists upvotes (
   issue_id uuid references issues(id) on delete cascade,
   user_id uuid references profiles(id),
   primary key (issue_id, user_id)
 );
 
 -- Events / announcements
-create table events (
+create table if not exists events (
   id uuid primary key default gen_random_uuid(),
   org_name text,
   title text not null,
@@ -52,7 +52,7 @@ create table events (
 );
 
 -- Service provider directory
-create table service_providers (
+create table if not exists service_providers (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   category text not null,
@@ -63,7 +63,7 @@ create table service_providers (
 );
 
 -- Notifications
-create table notifications (
+create table if not exists notifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references profiles(id),
   issue_id uuid references issues(id),

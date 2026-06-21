@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { supabase } from './supabaseClient'
+import CameraCapture from './CameraCapture'
 import './App.css'
 
 function LocationPicker({ onPick }) {
@@ -28,12 +29,14 @@ function App() {
   const [error, setError] = useState(null)
 
   const [radiusValue, setRadiusValue] = useState(3)
-  const [radiusUnit, setRadiusUnit] = useState('km') // 'km' or 'm'
+  const [radiusUnit, setRadiusUnit] = useState('km')
 
   const [pinLocation, setPinLocation] = useState(null)
   const [searchText, setSearchText] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
+
+  const [showCamera, setShowCamera] = useState(false)
 
   const [category, setCategory] = useState('roads')
   const [customCategory, setCustomCategory] = useState('')
@@ -64,7 +67,6 @@ function App() {
     )
   }, [])
 
-  // Convert whatever the user typed into meters, for the Circle component
   const radiusInMeters =
     radiusUnit === 'km' ? Number(radiusValue) * 1000 : Number(radiusValue)
 
@@ -162,6 +164,16 @@ function App() {
     <div className="app-container">
       <h1>LocalPulse</h1>
       {error && <p className="error-text">{error}</p>}
+
+      {showCamera && (
+        <CameraCapture
+          onCapture={(file) => {
+            setMediaFile(file)
+            setShowCamera(false)
+          }}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
 
       <div className="radius-control">
         <label>Show issues within: </label>
@@ -264,16 +276,9 @@ function App() {
         <div className="form-group">
           <label>Add Photo or Video</label>
           <div className="media-buttons">
-            <label className="media-btn">
+            <button type="button" className="media-btn" onClick={() => setShowCamera(true)}>
               Take Photo / Video
-              <input
-                type="file"
-                accept="image/*,video/*"
-                capture="environment"
-                onChange={(e) => setMediaFile(e.target.files[0])}
-                hidden
-              />
-            </label>
+            </button>
 
             <label className="media-btn">
               Upload from Device
