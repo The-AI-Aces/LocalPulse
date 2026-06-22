@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
+import { useAuthority } from '../AuthorityContext'
 
 function getDeviceId() {
   let id = localStorage.getItem('localpulse_device_id')
@@ -11,6 +12,8 @@ function getDeviceId() {
 }
 
 function FeedPage() {
+  const { isAuthority, profile } = useAuthority()
+  const [statusHistory, setStatusHistory] = useState({})
   const [location, setLocation] = useState(null)
   const [error, setError] = useState(null)
 
@@ -151,7 +154,44 @@ function FeedPage() {
       setCommentsByIssue((prev) => ({ ...prev, [issueId]: data || [] }))
     }
   }
+  async function updateStatus(issueId, newStatus) {
+  const { error } = await supabase
+    .from('issues')
+    .update({ status: newStatus })
+    .eq('id', issueId)
 
+  if (error) {
+    alert('Failed to update status: ' + error.message)
+    return
+  }
+
+  await supabase.from('status_history').insert({
+    issue_id: issueId,
+    changed_by: profile.id,
+    authority_name: profile.name,
+    department: profile.department,
+    new_status: newStatus,
+  })
+
+  setIssues((prev) =>
+    prev.map((i) => (i.id === issueId ? { ...i, status: newStatus } : i))
+  )
+
+  loadStatusHistory(issueId)
+}
+
+async function loadStatusHistory(issueId) {
+  const { data } = await supabase
+    .from('status_history')
+    .select('*')
+    .eq('issue_id', issueId)
+    .order('changed_at', { ascending: false })
+    .limit(1)
+
+  if (data && data.length > 0) {
+    setStatusHistory((prev) => ({ ...prev, [issueId]: data[0] }))
+  }
+}
   async function postComment(issueId) {
     if (!newComment.trim()) return
 
