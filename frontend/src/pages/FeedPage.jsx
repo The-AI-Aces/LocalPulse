@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
+
 function getDeviceId() {
   let id = localStorage.getItem('localpulse_device_id')
   if (!id) {
@@ -8,6 +9,7 @@ function getDeviceId() {
   }
   return id
 }
+
 function FeedPage() {
   const [location, setLocation] = useState(null)
   const [error, setError] = useState(null)
@@ -19,10 +21,19 @@ function FeedPage() {
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
 
-  const [sortBy, setSortBy] = useState('recent') // 'recent' or 'upvotes'
+  const [sortBy, setSortBy] = useState('recent')
   const [issues, setIssues] = useState([])
   const [loading, setLoading] = useState(false)
   const [fetchError, setFetchError] = useState('')
+
+  const [upvoteCounts, setUpvoteCounts] = useState({})
+  const [myUpvotes, setMyUpvotes] = useState(new Set())
+
+  const [commentsByIssue, setCommentsByIssue] = useState({})
+  const [openComments, setOpenComments] = useState(null)
+  const [newComment, setNewComment] = useState('')
+
+  const deviceId = getDeviceId()
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -65,15 +76,97 @@ function FeedPage() {
     if (error) {
       setFetchError('Failed to load issues: ' + error.message)
       setIssues([])
-    } else {
-      let sorted = [...data]
-      if (sortBy === 'recent') {
-        sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      }
-      setIssues(sorted)
+      setLoading(false)
+      return
     }
 
+    let list = [...data]
+
+    const ids = list.map((i) => i.id)
+    if (ids.length > 0) {
+      const { data: votes } = await supabase
+        .from('upvotes')
+        .select('issue_id, user_id')
+        .in('issue_id', ids)
+
+      const counts = {}
+      const mine = new Set()
+      votes?.forEach((v) => {
+        counts[v.issue_id] = (counts[v.issue_id] || 0) + 1
+        if (v.user_id === deviceId) mine.add(v.issue_id)
+      })
+      setUpvoteCounts(counts)
+      setMyUpvotes(mine)
+
+      if (sortBy === 'upvotes') {
+        list.sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0))
+      } else {
+        list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      }
+    }
+
+    setIssues(list)
     setLoading(false)
+  }
+
+  async function toggleUpvote(issueId) {
+    const alreadyVoted = myUpvotes.has(issueId)
+
+    if (alreadyVoted) {
+      await supabase
+        .from('upvotes')
+        .delete()
+        .eq('issue_id', issueId)
+        .eq('user_id', deviceId)
+
+      setMyUpvotes((prev) => {
+        const next = new Set(prev)
+        next.delete(issueId)
+        return next
+      })
+      setUpvoteCounts((prev) => ({ ...prev, [issueId]: (prev[issueId] || 1) - 1 }))
+    } else {
+      await supabase.from('upvotes').insert({ issue_id: issueId, user_id: deviceId })
+
+      setMyUpvotes((prev) => new Set(prev).add(issueId))
+      setUpvoteCounts((prev) => ({ ...prev, [issueId]: (prev[issueId] || 0) + 1 }))
+    }
+  }
+
+  async function loadComments(issueId) {
+    if (openComments === issueId) {
+      setOpenComments(null)
+      return
+    }
+
+    setOpenComments(issueId)
+
+    if (!commentsByIssue[issueId]) {
+      const { data } = await supabase
+        .from('comments')
+        .select('*')
+        .eq('issue_id', issueId)
+        .order('created_at', { ascending: true })
+
+      setCommentsByIssue((prev) => ({ ...prev, [issueId]: data || [] }))
+    }
+  }
+
+  async function postComment(issueId) {
+    if (!newComment.trim()) return
+
+    const { data, error } = await supabase
+      .from('comments')
+      .insert({ issue_id: issueId, user_id: deviceId, text: newComment.trim() })
+      .select()
+
+    if (!error && data) {
+      setCommentsByIssue((prev) => ({
+        ...prev,
+        [issueId]: [...(prev[issueId] || []), data[0]],
+      }))
+      setNewComment('')
+    }
   }
 
   async function handleSearch(e) {
@@ -103,7 +196,6 @@ function FeedPage() {
   }
 
   function timeAgo(dateString) {
-  // Ensure we're comparing against UTC properly by explicitly parsing as UTC if needed
     const utcDate = dateString.includes('Z') || dateString.includes('+')
       ? dateString
       : dateString + 'Z'
@@ -185,6 +277,41 @@ function FeedPage() {
                 <span>{issue.is_anonymous ? 'Anonymous' : 'Resident'}</span>
                 <span>{timeAgo(issue.created_at)}</span>
               </div>
+
+              <div className="issue-actions">
+                <button
+                  className={`upvote-btn ${myUpvotes.has(issue.id) ? 'voted' : ''}`}
+                  onClick={() => toggleUpvote(issue.id)}
+                >
+                  ▲ {upvoteCounts[issue.id] || 0}
+                </button>
+                <button className="comment-toggle-btn" onClick={() => loadComments(issue.id)}>
+                  💬 Comments
+                </button>
+              </div>
+
+              {openComments === issue.id && (
+                <div className="comments-section">
+                  {(commentsByIssue[issue.id] || []).map((c) => (
+                    <p key={c.id} className="comment-line">
+                      {c.text}
+                    </p>
+                  ))}
+                  {(commentsByIssue[issue.id] || []).length === 0 && (
+                    <p className="comment-line empty">No comments yet.</p>
+                  )}
+
+                  <div className="comment-input-row">
+                    <input
+                      type="text"
+                      placeholder="Add a comment..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                    />
+                    <button onClick={() => postComment(issue.id)}>Post</button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}
