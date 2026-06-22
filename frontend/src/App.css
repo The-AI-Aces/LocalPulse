@@ -341,7 +341,23 @@ h2 {
   gap: 10px;
   margin-bottom: 10px;
 }
+.status-dropdown {
+  padding: 4px 8px;
+  border-radius: 12px;
+  border: 1px solid #2d6cdf;
+  color: #2d6cdf;
+  font-size: 0.8rem;
+  background: white;
+}
 
+.status-update-note {
+  font-size: 0.8rem;
+  color: #2d6cdf;
+  background: #eef2f9;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-top: 8px;
+}
 .mode-toggle button {
   padding: 8px 16px;
   border-radius: 20px;

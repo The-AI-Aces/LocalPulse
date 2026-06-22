@@ -309,14 +309,35 @@ async function loadStatusHistory(issueId) {
             )}
             <div className="issue-body">
               <div className="issue-header">
-                <span className="issue-category">{issue.category}</span>
-                <span className="issue-status">{issue.status}</span>
-              </div>
+  <span className="issue-category">{issue.category}</span>
+  {isAuthority ? (
+    <select
+      className="status-dropdown"
+      value={issue.status}
+      onChange={(e) => updateStatus(issue.id, e.target.value)}
+    >
+      <option value="Open">Open</option>
+      <option value="Under Review">Under Review</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Resolved">Resolved</option>
+    </select>
+  ) : (
+    <span className="issue-status">{issue.status}</span>
+  )}
+</div>
               <p className="issue-description">{issue.description}</p>
               <div className="issue-meta">
-                <span>{issue.is_anonymous ? 'Anonymous' : 'Resident'}</span>
-                <span>{timeAgo(issue.created_at)}</span>
-              </div>
+  <span>{issue.is_anonymous ? 'Anonymous' : 'Resident'}</span>
+  <span>{timeAgo(issue.created_at)}</span>
+</div>
+
+{statusHistory[issue.id] && (
+  <p className="status-update-note">
+    Updated to "{statusHistory[issue.id].new_status}" by{' '}
+    {statusHistory[issue.id].authority_name} ({statusHistory[issue.id].department}) ·{' '}
+    {timeAgo(statusHistory[issue.id].changed_at)}
+  </p>
+)}
 
               <div className="issue-actions">
                 <button
