@@ -397,7 +397,68 @@ h2 {
   margin: 6px 0;
   color: #333;
 }
+.issue-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
 
+.upvote-btn,
+.comment-toggle-btn {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  background: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.upvote-btn.voted {
+  background: #2d6cdf;
+  color: white;
+  border-color: #2d6cdf;
+}
+
+.comments-section {
+  margin-top: 12px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.comment-line {
+  font-size: 0.9rem;
+  background: #f5f7fa;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.comment-line.empty {
+  color: #888;
+  background: none;
+  padding-left: 0;
+}
+
+.comment-input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.comment-input-row input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.comment-input-row button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  background: #2d6cdf;
+  color: white;
+}
 .issue-meta {
   display: flex;
   justify-content: space-between;
