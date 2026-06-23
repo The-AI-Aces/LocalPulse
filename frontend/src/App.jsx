@@ -6,6 +6,8 @@ import { AuthorityProvider } from './AuthorityContext'
 import AuthorityLogin from './AuthorityLogin'
 import NotificationBell from './NotificationBell'
 import EventsPage from './pages/EventsPage'
+import DirectoryPage from './pages/DirectoryPage'
+
 function App() {
   return (
     <AuthorityProvider>
@@ -22,6 +24,9 @@ function App() {
           </NavLink>
           <NavLink to="/events" className={({ isActive }) => (isActive ? 'active' : '')}>
             Events
+          </NavLink>
+          <NavLink to="/directory" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Directory
           </NavLink>
         </nav>
         <AuthorityLogin />
