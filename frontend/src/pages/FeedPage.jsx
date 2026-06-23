@@ -192,10 +192,12 @@ async function saveAreaSubscription(center) {
 
   const notifyIds = new Set((voters || []).map((v) => v.user_id))
 
-  // Also notify the original reporter, if known
   if (issueData.reporter_device_id) {
     notifyIds.add(issueData.reporter_device_id)
   }
+
+  // Clean up any old notifications tied to this issue first
+  await supabase.from('notifications').delete().eq('issue_id', issueId)
 
   const notifications = Array.from(notifyIds).map((userId) => ({
     user_id: userId,

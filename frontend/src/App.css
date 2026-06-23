@@ -88,6 +88,23 @@ h2 {
   font-size: 0.85rem;
   padding: 8px;
   border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.notif-dismiss {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.notif-dismiss:hover {
+  color: #c0392b;
 }
 
 .notif-empty {

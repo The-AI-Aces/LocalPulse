@@ -67,18 +67,25 @@ function NotificationBell() {
       </button>
 
       {open && (
-        <div className="notification-dropdown">
-          {notifications.length === 0 ? (
-            <p className="notif-empty">No notifications yet.</p>
-          ) : (
-            notifications.map((n) => (
-              <p key={n.id} className="notif-item">
-                {n.message}
-              </p>
-            ))
-          )}
+  <div className="notification-dropdown">
+    {notifications.length === 0 ? (
+      <p className="notif-empty">No notifications yet.</p>
+    ) : (
+      notifications.map((n) => (
+        <div key={n.id} className="notif-item">
+          <span>{n.message}</span>
+          <button
+            className="notif-dismiss"
+            onClick={() => dismissNotification(n.id)}
+            title="Dismiss"
+          >
+            ✕
+          </button>
         </div>
-      )}
+      ))
+    )}
+  </div>
+)}
     </div>
   )
 }
