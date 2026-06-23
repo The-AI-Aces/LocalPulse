@@ -5,6 +5,15 @@ import { supabase } from '../supabaseClient'
 import CameraCapture from '../CameraCapture'
 import MediaPreview from '../MediaPreview'
 
+function getDeviceId() {
+  let id = localStorage.getItem('localpulse_device_id')
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem('localpulse_device_id', id)
+  }
+  return id
+}
+
 function LocationPicker({ onPick }) {
   useMapEvents({
     click(e) {
@@ -149,8 +158,8 @@ function ReportPage() {
       lat: pinLocation.lat,
       lng: pinLocation.lng,
       is_anonymous: isAnonymous,
+      reporter_device_id: getDeviceId(),
     })
-
     setSubmitting(false)
 
     if (insertError) {

@@ -61,11 +61,21 @@ function FeedPage() {
     radiusUnit === 'km' ? Number(radiusValue) * 1000 : Number(radiusValue)
 
   useEffect(() => {
-    if (location) {
-      fetchIssues(location)
-    }
-  }, [location, radiusValue, radiusUnit, sortBy])
+  if (location) {
+    fetchIssues(location)
+    saveAreaSubscription(location)
+  }
+}, [location, radiusValue, radiusUnit, sortBy])
 
+async function saveAreaSubscription(center) {
+  await supabase.from('area_subscriptions').upsert({
+    device_id: deviceId,
+    lat: center.lat,
+    lng: center.lng,
+    radius_meters: radiusInMeters,
+    updated_at: new Date().toISOString(),
+  })
+}
   async function fetchIssues(center) {
     setLoading(true)
     setFetchError('')
@@ -154,12 +164,13 @@ function FeedPage() {
 
       setCommentsByIssue((prev) => ({ ...prev, [issueId]: data || [] }))
     }
-  }
-  async function updateStatus(issueId, newStatus) {
-  const { error } = await supabase
+  }async function updateStatus(issueId, newStatus) {
+  const { data: issueData, error } = await supabase
     .from('issues')
     .update({ status: newStatus })
     .eq('id', issueId)
+    .select()
+    .single()
 
   if (error) {
     alert('Failed to update status: ' + error.message)
@@ -174,7 +185,6 @@ function FeedPage() {
     new_status: newStatus,
   })
 
-  // Notify everyone who upvoted this issue
   const { data: voters } = await supabase
     .from('upvotes')
     .select('user_id')
@@ -182,10 +192,15 @@ function FeedPage() {
 
   const notifyIds = new Set((voters || []).map((v) => v.user_id))
 
+  // Also notify the original reporter, if known
+  if (issueData.reporter_device_id) {
+    notifyIds.add(issueData.reporter_device_id)
+  }
+
   const notifications = Array.from(notifyIds).map((userId) => ({
     user_id: userId,
     issue_id: issueId,
-    message: `An issue you upvoted is now "${newStatus}"`,
+    message: `An issue you reported or upvoted is now "${newStatus}"`,
   }))
 
   if (notifications.length > 0) {
