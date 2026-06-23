@@ -106,7 +106,15 @@ h2 {
 .notif-dismiss:hover {
   color: #c0392b;
 }
-
+.language-switcher {
+  display: block;
+  margin: 8px auto;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.85rem;
+  max-width: 250px;
+}
 .notif-empty {
   font-size: 0.85rem;
   color: #888;

@@ -7,7 +7,7 @@ import AuthorityLogin from './AuthorityLogin'
 import NotificationBell from './NotificationBell'
 import EventsPage from './pages/EventsPage'
 import DirectoryPage from './pages/DirectoryPage'
-
+import ProfilePage from './pages/ProfilePage'
 function App() {
   return (
     <AuthorityProvider>
@@ -28,6 +28,9 @@ function App() {
           <NavLink to="/directory" className={({ isActive }) => (isActive ? 'active' : '')}>
             Directory
           </NavLink>
+          <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Profile
+          </NavLink>
         </nav>
         <AuthorityLogin />
       </div>
@@ -36,6 +39,7 @@ function App() {
         <Route path="/" element={<FeedPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/report" element={<ReportPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
     </AuthorityProvider>

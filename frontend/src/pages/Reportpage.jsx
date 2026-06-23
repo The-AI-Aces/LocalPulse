@@ -151,6 +151,12 @@ function ReportPage() {
 
     const mediaUrl = urlData.publicUrl
 
+    const { data: residentProfile } = await supabase
+      .from('resident_profiles')
+      .select('village, district, state')
+      .eq('device_id', getDeviceId())
+      .maybeSingle()
+
     const { error: insertError } = await supabase.from('issues').insert({
       category: finalCategory,
       description,
@@ -159,7 +165,11 @@ function ReportPage() {
       lng: pinLocation.lng,
       is_anonymous: isAnonymous,
       reporter_device_id: getDeviceId(),
+      village: residentProfile?.village || null,
+      district: residentProfile?.district || null,
+      state: residentProfile?.state || null,
     })
+
     setSubmitting(false)
 
     if (insertError) {

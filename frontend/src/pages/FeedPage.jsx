@@ -25,6 +25,9 @@ function FeedPage() {
   const [searchError, setSearchError] = useState('')
 
   const [sortBy, setSortBy] = useState('recent')
+  const [scope, setScope] = useState('near')
+  const [myRegion, setMyRegion] = useState({ village: '', district: '', state: '' })
+
   const [issues, setIssues] = useState([])
   const [loading, setLoading] = useState(false)
   const [fetchError, setFetchError] = useState('')
@@ -61,21 +64,41 @@ function FeedPage() {
     radiusUnit === 'km' ? Number(radiusValue) * 1000 : Number(radiusValue)
 
   useEffect(() => {
-  if (location) {
-    fetchIssues(location)
-    saveAreaSubscription(location)
-  }
-}, [location, radiusValue, radiusUnit, sortBy])
+    loadMyRegion()
+  }, [isAuthority, profile])
 
-async function saveAreaSubscription(center) {
-  await supabase.from('area_subscriptions').upsert({
-    device_id: deviceId,
-    lat: center.lat,
-    lng: center.lng,
-    radius_meters: radiusInMeters,
-    updated_at: new Date().toISOString(),
-  })
-}
+  async function loadMyRegion() {
+    if (isAuthority && profile) {
+      setMyRegion({ village: '', district: profile.district, state: profile.state })
+      return
+    }
+    const { data } = await supabase
+      .from('resident_profiles')
+      .select('village, district, state')
+      .eq('device_id', deviceId)
+      .maybeSingle()
+    if (data) setMyRegion(data)
+  }
+
+  useEffect(() => {
+    if (scope === 'near' && location) {
+      fetchIssues(location)
+      saveAreaSubscription(location)
+    } else if (scope !== 'near') {
+      fetchByRegion()
+    }
+  }, [location, radiusValue, radiusUnit, sortBy, scope, myRegion])
+
+  async function saveAreaSubscription(center) {
+    await supabase.from('area_subscriptions').upsert({
+      device_id: deviceId,
+      lat: center.lat,
+      lng: center.lng,
+      radius_meters: radiusInMeters,
+      updated_at: new Date().toISOString(),
+    })
+  }
+
   async function fetchIssues(center) {
     setLoading(true)
     setFetchError('')
@@ -93,9 +116,35 @@ async function saveAreaSubscription(center) {
       return
     }
 
-    let list = [...data]
+    await applyVotesAndSort(data)
+  }
 
+  async function fetchByRegion() {
+    setLoading(true)
+    setFetchError('')
+
+    let query = supabase.from('issues').select('*')
+
+    if (scope === 'village' && myRegion.village) query = query.eq('village', myRegion.village)
+    if (scope === 'district' && myRegion.district) query = query.eq('district', myRegion.district)
+    if (scope === 'state' && myRegion.state) query = query.eq('state', myRegion.state)
+
+    const { data, error } = await query
+
+    if (error) {
+      setFetchError('Failed to load issues: ' + error.message)
+      setIssues([])
+      setLoading(false)
+      return
+    }
+
+    await applyVotesAndSort(data)
+  }
+
+  async function applyVotesAndSort(data) {
+    let list = [...data]
     const ids = list.map((i) => i.id)
+
     if (ids.length > 0) {
       const { data: votes } = await supabase
         .from('upvotes')
@@ -164,69 +213,72 @@ async function saveAreaSubscription(center) {
 
       setCommentsByIssue((prev) => ({ ...prev, [issueId]: data || [] }))
     }
-  }async function updateStatus(issueId, newStatus) {
-  const { data: issueData, error } = await supabase
-    .from('issues')
-    .update({ status: newStatus })
-    .eq('id', issueId)
-    .select()
-    .single()
-
-  if (error) {
-    alert('Failed to update status: ' + error.message)
-    return
   }
 
-  await supabase.from('status_history').insert({
-    issue_id: issueId,
-    changed_by: profile.id,
-    authority_name: profile.name,
-    department: profile.department,
-    new_status: newStatus,
-  })
+  async function updateStatus(issueId, newStatus) {
+    const { data: issueData, error } = await supabase
+      .from('issues')
+      .update({ status: newStatus })
+      .eq('id', issueId)
+      .select()
+      .single()
 
-  const { data: voters } = await supabase
-    .from('upvotes')
-    .select('user_id')
-    .eq('issue_id', issueId)
+    if (error) {
+      alert('Failed to update status: ' + error.message)
+      return
+    }
 
-  const notifyIds = new Set((voters || []).map((v) => v.user_id))
+    await supabase.from('status_history').insert({
+      issue_id: issueId,
+      changed_by: profile.id,
+      authority_name: profile.name,
+      department: profile.department,
+      new_status: newStatus,
+    })
 
-  if (issueData.reporter_device_id) {
-    notifyIds.add(issueData.reporter_device_id)
+    const { data: voters } = await supabase
+      .from('upvotes')
+      .select('user_id')
+      .eq('issue_id', issueId)
+
+    const notifyIds = new Set((voters || []).map((v) => v.user_id))
+
+    if (issueData.reporter_device_id) {
+      notifyIds.add(issueData.reporter_device_id)
+    }
+
+    await supabase.from('notifications').delete().eq('issue_id', issueId)
+
+    const notifications = Array.from(notifyIds).map((userId) => ({
+      user_id: userId,
+      issue_id: issueId,
+      message: `An issue you reported or upvoted is now "${newStatus}"`,
+    }))
+
+    if (notifications.length > 0) {
+      await supabase.from('notifications').insert(notifications)
+    }
+
+    setIssues((prev) =>
+      prev.map((i) => (i.id === issueId ? { ...i, status: newStatus } : i))
+    )
+
+    loadStatusHistory(issueId)
   }
 
-  // Clean up any old notifications tied to this issue first
-  await supabase.from('notifications').delete().eq('issue_id', issueId)
+  async function loadStatusHistory(issueId) {
+    const { data } = await supabase
+      .from('status_history')
+      .select('*')
+      .eq('issue_id', issueId)
+      .order('changed_at', { ascending: false })
+      .limit(1)
 
-  const notifications = Array.from(notifyIds).map((userId) => ({
-    user_id: userId,
-    issue_id: issueId,
-    message: `An issue you reported or upvoted is now "${newStatus}"`,
-  }))
-
-  if (notifications.length > 0) {
-    await supabase.from('notifications').insert(notifications)
+    if (data && data.length > 0) {
+      setStatusHistory((prev) => ({ ...prev, [issueId]: data[0] }))
+    }
   }
 
-  setIssues((prev) =>
-    prev.map((i) => (i.id === issueId ? { ...i, status: newStatus } : i))
-  )
-
-  loadStatusHistory(issueId)
-}
-async function loadStatusHistory(issueId) {
-  const { data } = await supabase
-    .from('status_history')
-    .select('*')
-    .eq('issue_id', issueId)
-    .order('changed_at', { ascending: false })
-    .limit(1)
-
-  if (data && data.length > 0) {
-    setStatusHistory((prev) => ({ ...prev, [issueId]: data[0] }))
-  }
-}
   async function postComment(issueId) {
     if (!newComment.trim()) return
 
@@ -290,32 +342,54 @@ async function loadStatusHistory(issueId) {
       {error && <p className="error-text">{error}</p>}
 
       <div className="radius-control">
-        <label>Radius: </label>
-        <input
-          type="number"
-          min="1"
-          value={radiusValue}
-          onChange={(e) => setRadiusValue(e.target.value)}
-          className="radius-input"
-        />
-        <select value={radiusUnit} onChange={(e) => setRadiusUnit(e.target.value)}>
-          <option value="m">meters</option>
-          <option value="km">km</option>
+        <label>Filter by: </label>
+        <select value={scope} onChange={(e) => setScope(e.target.value)}>
+          <option value="near">Near Me (radius)</option>
+          <option value="village">My Village</option>
+          <option value="district">My District</option>
+          <option value="state">My State</option>
+          <option value="all">All India</option>
         </select>
       </div>
 
-      <form className="search-bar" onSubmit={handleSearch}>
-        <input
-          type="text"
-          placeholder="Search a place, street, or area..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-        />
-        <button type="submit" disabled={searching}>
-          {searching ? 'Searching...' : 'Search'}
-        </button>
-      </form>
-      {searchError && <p className="error-text">{searchError}</p>}
+      {scope === 'near' && (
+        <>
+          <div className="radius-control">
+            <label>Radius: </label>
+            <input
+              type="number"
+              min="1"
+              value={radiusValue}
+              onChange={(e) => setRadiusValue(e.target.value)}
+              className="radius-input"
+            />
+            <select value={radiusUnit} onChange={(e) => setRadiusUnit(e.target.value)}>
+              <option value="m">meters</option>
+              <option value="km">km</option>
+            </select>
+          </div>
+
+          <form className="search-bar" onSubmit={handleSearch}>
+            <input
+              type="text"
+              placeholder="Search a place, street, or area..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+            <button type="submit" disabled={searching}>
+              {searching ? 'Searching...' : 'Search'}
+            </button>
+          </form>
+          {searchError && <p className="error-text">{searchError}</p>}
+        </>
+      )}
+
+      {(scope === 'village' || scope === 'district' || scope === 'state') &&
+        !myRegion[scope] && (
+          <p className="error-text">
+            Your {scope} isn't set yet. Add it in your Profile page to use this filter.
+          </p>
+        )}
 
       <div className="sort-control">
         <label>Sort by: </label>
@@ -344,35 +418,41 @@ async function loadStatusHistory(issueId) {
             )}
             <div className="issue-body">
               <div className="issue-header">
-  <span className="issue-category">{issue.category}</span>
-  {isAuthority ? (
-    <select
-      className="status-dropdown"
-      value={issue.status}
-      onChange={(e) => updateStatus(issue.id, e.target.value)}
-    >
-      <option value="Open">Open</option>
-      <option value="Under Review">Under Review</option>
-      <option value="In Progress">In Progress</option>
-      <option value="Resolved">Resolved</option>
-    </select>
-  ) : (
-    <span className="issue-status">{issue.status}</span>
-  )}
-</div>
+                <span className="issue-category">{issue.category}</span>
+                {isAuthority ? (
+                  <select
+                    className="status-dropdown"
+                    value={issue.status}
+                    onChange={(e) => updateStatus(issue.id, e.target.value)}
+                  >
+                    <option value="Open">Open</option>
+                    <option value="Under Review">Under Review</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                  </select>
+                ) : (
+                  <span className="issue-status">{issue.status}</span>
+                )}
+              </div>
               <p className="issue-description">{issue.description}</p>
               <div className="issue-meta">
-  <span>{issue.is_anonymous ? 'Anonymous' : 'Resident'}</span>
-  <span>{timeAgo(issue.created_at)}</span>
-</div>
+                <span>{issue.is_anonymous ? 'Anonymous' : 'Resident'}</span>
+                <span>{timeAgo(issue.created_at)}</span>
+              </div>
 
-{statusHistory[issue.id] && (
-  <p className="status-update-note">
-    Updated to "{statusHistory[issue.id].new_status}" by{' '}
-    {statusHistory[issue.id].authority_name} ({statusHistory[issue.id].department}) ·{' '}
-    {timeAgo(statusHistory[issue.id].changed_at)}
-  </p>
-)}
+              {(issue.village || issue.district || issue.state) && (
+                <p className="file-name">
+                  📍 {[issue.village, issue.district, issue.state].filter(Boolean).join(', ')}
+                </p>
+              )}
+
+              {statusHistory[issue.id] && (
+                <p className="status-update-note">
+                  Updated to "{statusHistory[issue.id].new_status}" by{' '}
+                  {statusHistory[issue.id].authority_name} ({statusHistory[issue.id].department}) ·{' '}
+                  {timeAgo(statusHistory[issue.id].changed_at)}
+                </p>
+              )}
 
               <div className="issue-actions">
                 <button
