@@ -47,6 +47,10 @@ function NotificationBell() {
     await supabase.from('notifications').update({ is_read: true }).eq('user_id', myId)
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
   }
+  async function dismissNotification(notificationId) {
+    await supabase.from('notifications').delete().eq('id', notificationId)
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
+  }
 
   function handleToggle() {
     const willOpen = !open
