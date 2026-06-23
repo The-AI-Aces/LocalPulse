@@ -428,6 +428,10 @@ h2 {
   margin-bottom: 10px;
   font-size: 0.9rem;
 }
+.event-title {
+  font-weight: 600;
+  margin: 4px 0;
+}
 .top-bar {
   text-align: center;
   position: relative;

@@ -5,7 +5,7 @@ import './App.css'
 import { AuthorityProvider } from './AuthorityContext'
 import AuthorityLogin from './AuthorityLogin'
 import NotificationBell from './NotificationBell'
-
+import EventsPage from './pages/EventsPage'
 function App() {
   return (
     <AuthorityProvider>
@@ -20,12 +20,16 @@ function App() {
           <NavLink to="/report" className={({ isActive }) => (isActive ? 'active' : '')}>
             Report
           </NavLink>
+          <NavLink to="/events" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Events
+          </NavLink>
         </nav>
         <AuthorityLogin />
       </div>
 
       <Routes>
         <Route path="/" element={<FeedPage />} />
+        <Route path="/events" element={<EventsPage />} />
         <Route path="/report" element={<ReportPage />} />
       </Routes>
     </BrowserRouter>
