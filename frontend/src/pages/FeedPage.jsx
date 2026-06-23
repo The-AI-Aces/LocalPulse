@@ -109,6 +109,7 @@ function FeedPage() {
     }
 
     setIssues(list)
+    list.forEach((issue) => loadStatusHistory(issue.id))
     setLoading(false)
   }
 
