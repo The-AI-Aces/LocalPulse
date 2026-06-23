@@ -174,13 +174,30 @@ function FeedPage() {
     new_status: newStatus,
   })
 
+  // Notify everyone who upvoted this issue
+  const { data: voters } = await supabase
+    .from('upvotes')
+    .select('user_id')
+    .eq('issue_id', issueId)
+
+  const notifyIds = new Set((voters || []).map((v) => v.user_id))
+
+  const notifications = Array.from(notifyIds).map((userId) => ({
+    user_id: userId,
+    issue_id: issueId,
+    message: `An issue you upvoted is now "${newStatus}"`,
+  }))
+
+  if (notifications.length > 0) {
+    await supabase.from('notifications').insert(notifications)
+  }
+
   setIssues((prev) =>
     prev.map((i) => (i.id === issueId ? { ...i, status: newStatus } : i))
   )
 
   loadStatusHistory(issueId)
 }
-
 async function loadStatusHistory(issueId) {
   const { data } = await supabase
     .from('status_history')

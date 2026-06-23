@@ -4,6 +4,7 @@ import FeedPage from './pages/FeedPage'
 import './App.css'
 import { AuthorityProvider } from './AuthorityContext'
 import AuthorityLogin from './AuthorityLogin'
+import NotificationBell from './NotificationBell'
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
     <BrowserRouter>
       <div className="top-bar">
         <h1>LocalPulse</h1>
+        <NotificationBell />
         <nav className="tab-nav">
           <NavLink to="/" className={({ isActive }) => (isActive ? 'active' : '')}>
             Feed
