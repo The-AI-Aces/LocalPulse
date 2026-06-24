@@ -43,15 +43,34 @@ export function AuthorityProvider({ children }) {
     return null
   }
 
+  async function signupResident(email, password, name) {
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) return error.message
+
+    if (data.user) {
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: data.user.id,
+        name,
+        is_authority: false,
+      })
+      if (profileError) return profileError.message
+    }
+
+    return null
+  }
+
   async function logout() {
     await supabase.auth.signOut()
     setProfile(null)
   }
 
   const isAuthority = !!profile?.is_authority
+  const isLoggedIn = !!profile
 
   return (
-    <AuthorityContext.Provider value={{ isAuthority, profile, login, logout, loading }}>
+    <AuthorityContext.Provider
+      value={{ isAuthority, isLoggedIn, profile, login, signupResident, logout, loading, setProfile }}
+    >
       {children}
     </AuthorityContext.Provider>
   )
