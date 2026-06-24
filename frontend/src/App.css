@@ -245,7 +245,45 @@ h2 {
   background: white;
   color: #2d6cdf;
 }
+.auth-gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f7fa;
+  padding: 20px;
+}
 
+.auth-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+
+.auth-usertype-toggle {
+  margin-bottom: 16px;
+}
+
+.password-row {
+  display: flex;
+  gap: 8px;
+}
+
+.password-row input {
+  flex: 1;
+}
+
+.password-toggle {
+  padding: 0 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #2d6cdf;
+  font-size: 0.85rem;
+}
 .report-form .mode-toggle button.active {
   background: #2d6cdf;
   color: white;

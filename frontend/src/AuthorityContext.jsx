@@ -4,19 +4,16 @@ import { supabase } from './supabaseClient'
 const AuthorityContext = createContext()
 
 export function AuthorityProvider({ children }) {
-  const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
       if (data.session) loadProfile(data.session.user.id)
       else setLoading(false)
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession)
       if (newSession) loadProfile(newSession.user.id)
       else {
         setProfile(null)
@@ -28,11 +25,7 @@ export function AuthorityProvider({ children }) {
   }, [])
 
   async function loadProfile(userId) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
     setProfile(data)
     setLoading(false)
   }
@@ -43,7 +36,7 @@ export function AuthorityProvider({ children }) {
     return null
   }
 
-  async function signupResident(email, password, name) {
+  async function signupResident(email, password, name, homeLat, homeLng) {
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) return error.message
 
@@ -52,8 +45,11 @@ export function AuthorityProvider({ children }) {
         id: data.user.id,
         name,
         is_authority: false,
+        home_lat: homeLat ?? null,
+        home_lng: homeLng ?? null,
       })
       if (profileError) return profileError.message
+      await loadProfile(data.user.id)
     }
 
     return null
