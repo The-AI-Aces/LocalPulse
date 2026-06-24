@@ -232,7 +232,24 @@ h2 {
   margin-bottom: 6px;
   font-size: 0.95rem;
 }
+.report-form .mode-toggle {
+  display: flex;
+  gap: 10px;
+}
 
+.report-form .mode-toggle button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #2d6cdf;
+  background: white;
+  color: #2d6cdf;
+}
+
+.report-form .mode-toggle button.active {
+  background: #2d6cdf;
+  color: white;
+}
 .form-group select,
 .form-group textarea,
 .form-group input[type="text"] {
