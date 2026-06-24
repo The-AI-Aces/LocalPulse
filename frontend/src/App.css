@@ -284,6 +284,159 @@ h2 {
   color: #2d6cdf;
   font-size: 0.85rem;
 }
+.auth-gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  padding: 20px;
+}
+
+.auth-card {
+  background: #ffffff;
+  border: 1px solid #dbdbdb;
+  border-radius: 12px;
+  padding: 32px 24px;
+  max-width: 360px;
+  width: 100%;
+}
+
+.auth-logo {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d6cdf;
+  margin: 0 0 24px 0;
+}
+
+.auth-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #efefef;
+  padding-bottom: 12px;
+}
+
+.auth-tab {
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #8e8e8e;
+  background: transparent;
+  padding-bottom: 4px;
+}
+
+.auth-tab.active {
+  color: #2d6cdf;
+  border-bottom: 2px solid #2d6cdf;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 6px;
+  border: 1px solid #dbdbdb;
+  background-color: #fafafa;
+  color: #1a1a1a;
+  font-size: 0.9rem;
+}
+
+.auth-form input::placeholder {
+  color: #8e8e8e;
+}
+
+.auth-password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-password-field input {
+  flex: 1;
+  padding-right: 60px;
+}
+
+.auth-eye {
+  position: absolute;
+  right: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2d6cdf;
+  background: transparent;
+  cursor: pointer;
+}
+
+.auth-primary-btn {
+  width: 100%;
+  padding: 11px;
+  border-radius: 8px;
+  border: none;
+  background-color: #2d6cdf;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.auth-primary-btn:disabled {
+  background-color: #a9c3ea;
+}
+
+.auth-secondary-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #2d6cdf;
+  background-color: #ffffff;
+  color: #2d6cdf;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.auth-location-row {
+  display: flex;
+  gap: 16px;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.auth-hint {
+  font-size: 0.8rem;
+  color: #2d6cdf;
+  margin: 2px 0;
+}
+
+.auth-error {
+  font-size: 0.85rem;
+  color: #c0392b;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.auth-switch-links {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 18px;
+  font-size: 0.85rem;
+}
+
+.auth-switch-links span {
+  color: #2d6cdf;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .report-form .mode-toggle button.active {
   background: #2d6cdf;
   color: white;
