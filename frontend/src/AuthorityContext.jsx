@@ -59,10 +59,18 @@ export function AuthorityProvider({ children }) {
   return null
 }
 
- async function signupResident(email, password, name, homeLat, homeLng) {
+ async function signupResident(email, password, name, phone, village, district, state, homeLat, homeLng) {
   const { data, error } = await supabase.auth.signUp({ email, password })
-  if (error) return error.message
 
+  if (error) {
+    if (error.message.toLowerCase().includes('rate limit') || error.message.toLowerCase().includes('email rate')) {
+      return 'Too many signup attempts right now. Please wait a minute and try again.'
+    }
+    if (error.message.toLowerCase().includes('already registered')) {
+      return 'This email is already registered. Try logging in instead.'
+    }
+    return error.message
+  }
   if (data.user) {
     const { error: profileError } = await supabase.from('profiles').insert({
       id: data.user.id,

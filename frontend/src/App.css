@@ -292,14 +292,20 @@ h2 {
   background: #fafafa;
   padding: 20px;
 }
-
 .auth-card {
   background: #ffffff;
-  border: 1px solid #dbdbdb;
-  border-radius: 12px;
-  padding: 32px 24px;
-  max-width: 360px;
-  width: 100%;
+  border: none;
+  border-radius: 20px;
+  padding: 40px 32px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
 }
 
 .auth-logo {

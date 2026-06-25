@@ -130,7 +130,17 @@ function AuthGate({ onGuestAccess }) {
     }
 
     setSubmitting(true)
-    const err = await signupResident(email, password, name, phone, village, district, state, homeLocation.lat, homeLocation.lng)
+    const err = await signupResident(
+      email,
+      password,
+      name,
+      phone,
+      village,
+      district,
+      state,
+      homeLocation.lat,
+      homeLocation.lng
+    )
     setSubmitting(false)
     if (err) setMessage(err)
   }
@@ -168,20 +178,46 @@ function AuthGate({ onGuestAccess }) {
         <h1 className="auth-logo">LocalPulse</h1>
 
         <div className="auth-tabs">
-          <span className={userType === 'resident' ? 'auth-tab active' : 'auth-tab'} onClick={() => { setUserType('resident'); setMessage('') }}>
+          <span
+            className={userType === 'resident' ? 'auth-tab active' : 'auth-tab'}
+            onClick={() => { setUserType('resident'); setMessage('') }}
+          >
             Resident
           </span>
-          <span className={userType === 'authority' ? 'auth-tab active' : 'auth-tab'} onClick={() => { setUserType('authority'); setMessage('') }}>
+          <span
+            className={userType === 'authority' ? 'auth-tab active' : 'auth-tab'}
+            onClick={() => { setUserType('authority'); setMessage('') }}
+          >
             Authority
           </span>
         </div>
 
         {userType === 'authority' && (
           <form className="auth-form" onSubmit={handleAuthorityLogin}>
-            <input type="email" placeholder="Email" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} required />
-            <div className="auth-password-field">
-              <input type={showAuthPassword ? 'text' : 'password'} placeholder="Password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} required />
-              <span className="auth-eye" onClick={() => setShowAuthPassword(!showAuthPassword)}>{showAuthPassword ? 'Hide' : 'Show'}</span>
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Password</label>
+              <div className="auth-password-field">
+                <input
+                  type={showAuthPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  required
+                />
+                <span className="auth-eye" onClick={() => setShowAuthPassword(!showAuthPassword)}>
+                  {showAuthPassword ? 'Hide' : 'Show'}
+                </span>
+              </div>
             </div>
             <button type="submit" className="auth-primary-btn" disabled={submitting}>
               {submitting ? 'Logging in...' : 'Log In'}
@@ -193,10 +229,30 @@ function AuthGate({ onGuestAccess }) {
           <>
             {residentMode === 'login' && (
               <form className="auth-form" onSubmit={handleResidentLogin}>
-                <input type="email" placeholder="Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
-                <div className="auth-password-field">
-                  <input type={showLoginPassword ? 'text' : 'password'} placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
-                  <span className="auth-eye" onClick={() => setShowLoginPassword(!showLoginPassword)}>{showLoginPassword ? 'Hide' : 'Show'}</span>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Password</label>
+                  <div className="auth-password-field">
+                    <input
+                      type={showLoginPassword ? 'text' : 'password'}
+                      placeholder="Enter your password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
+                    />
+                    <span className="auth-eye" onClick={() => setShowLoginPassword(!showLoginPassword)}>
+                      {showLoginPassword ? 'Hide' : 'Show'}
+                    </span>
+                  </div>
                 </div>
                 <button type="submit" className="auth-primary-btn" disabled={submitting}>
                   {submitting ? 'Logging in...' : 'Log In'}
@@ -206,43 +262,144 @@ function AuthGate({ onGuestAccess }) {
 
             {residentMode === 'signup' && (
               <form className="auth-form" onSubmit={handleSignup}>
-                <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                <div>
-                  <input type="tel" placeholder="Phone Number (10 digits)" value={phone} onChange={(e) => setPhone(e.target.value)} required />
-                  {phoneError && <p className="auth-error" style={{ marginTop: '4px' }}>{phoneError}</p>}
+                <div className="form-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
                 </div>
-                <input type="text" placeholder="Village / Town" value={village} onChange={(e) => setVillage(e.target.value)} />
-                <input type="text" placeholder="District" value={district} onChange={(e) => setDistrict(e.target.value)} />
-                <input type="text" placeholder="State" value={state} onChange={(e) => setState(e.target.value)} />
-
-                <div className="auth-password-field">
-                  <input type={showPassword ? 'text' : 'password'} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-                  <span className="auth-eye" onClick={() => setShowPassword(!showPassword)}>{showPassword ? 'Hide' : 'Show'}</span>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
-                <div className="auth-password-field">
-                  <input type={showConfirmPassword ? 'text' : 'password'} placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-                  <span className="auth-eye" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>{showConfirmPassword ? 'Hide' : 'Show'}</span>
+                <div className="form-group">
+                  <label>Phone Number</label>
+                  <input
+                    type="tel"
+                    placeholder="Enter your 10-digit phone number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
+                  {phoneError && <p className="error-text">{phoneError}</p>}
                 </div>
-
-                <div className="auth-location-row">
-                  <span className={locationMethod === 'current' ? 'auth-tab active' : 'auth-tab'} onClick={() => setLocationMethod('current')}>Use Current Location</span>
-                  <span className={locationMethod === 'manual' ? 'auth-tab active' : 'auth-tab'} onClick={() => setLocationMethod('manual')}>Enter Manually</span>
+                <div className="form-group">
+                  <label>Village / Town</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your village or town"
+                    value={village}
+                    onChange={(e) => setVillage(e.target.value)}
+                  />
                 </div>
-
-                {locationMethod === 'current' ? (
-                  <button type="button" className="auth-secondary-btn" onClick={useCurrentLocation} disabled={locating}>
-                    {locating ? 'Detecting...' : 'Detect My Location'}
-                  </button>
-                ) : (
+                <div className="form-group">
+                  <label>District</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your district"
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>State</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your state"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Password</label>
                   <div className="auth-password-field">
-                    <input type="text" placeholder="Enter your address or area" value={manualAddress} onChange={(e) => setManualAddress(e.target.value)} />
-                    <span className="auth-eye" onClick={geocodeManualAddress}>{locating ? '...' : 'Find'}</span>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Create a password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                    <span className="auth-eye" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? 'Hide' : 'Show'}
+                    </span>
                   </div>
-                )}
+                </div>
+                <div className="form-group">
+                  <label>Confirm Password</label>
+                  <div className="auth-password-field">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="Re-enter your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                    <span className="auth-eye" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                      {showConfirmPassword ? 'Hide' : 'Show'}
+                    </span>
+                  </div>
+                </div>
 
-                {homeLocation && <p className="auth-hint">✓ Location set ({homeLocation.lat.toFixed(3)}, {homeLocation.lng.toFixed(3)})</p>}
-                {locationError && <p className="auth-error">{locationError}</p>}
+                <div className="form-group">
+                  <label>Your Location</label>
+                  <div className="auth-location-row">
+                    <span
+                      className={locationMethod === 'current' ? 'auth-tab active' : 'auth-tab'}
+                      onClick={() => setLocationMethod('current')}
+                    >
+                      Use Current Location
+                    </span>
+                    <span
+                      className={locationMethod === 'manual' ? 'auth-tab active' : 'auth-tab'}
+                      onClick={() => setLocationMethod('manual')}
+                    >
+                      Enter Manually
+                    </span>
+                  </div>
+
+                  {locationMethod === 'current' ? (
+                    <button
+                      type="button"
+                      className="auth-secondary-btn"
+                      style={{ marginTop: '8px' }}
+                      onClick={useCurrentLocation}
+                      disabled={locating}
+                    >
+                      {locating ? 'Detecting...' : 'Detect My Location'}
+                    </button>
+                  ) : (
+                    <div className="auth-password-field" style={{ marginTop: '8px' }}>
+                      <input
+                        type="text"
+                        placeholder="Enter your address or area"
+                        value={manualAddress}
+                        onChange={(e) => setManualAddress(e.target.value)}
+                      />
+                      <span className="auth-eye" onClick={geocodeManualAddress}>
+                        {locating ? '...' : 'Find'}
+                      </span>
+                    </div>
+                  )}
+
+                  {homeLocation && (
+                    <p className="auth-hint">
+                      ✓ Location set ({homeLocation.lat.toFixed(3)}, {homeLocation.lng.toFixed(3)})
+                    </p>
+                  )}
+                  {locationError && <p className="error-text">{locationError}</p>}
+                </div>
 
                 <button type="submit" className="auth-primary-btn" disabled={submitting}>
                   {submitting ? 'Creating account...' : 'Sign Up'}
@@ -252,14 +409,52 @@ function AuthGate({ onGuestAccess }) {
 
             {residentMode === 'guest' && (
               <form className="auth-form" onSubmit={handleGuestSave}>
-                <input type="text" placeholder="Name" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
-                <div>
-                  <input type="tel" placeholder="Phone Number (10 digits)" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} />
-                  {guestPhoneError && <p className="auth-error" style={{ marginTop: '4px' }}>{guestPhoneError}</p>}
+                <div className="form-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your name"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                  />
                 </div>
-                <input type="text" placeholder="Village / Town" value={guestVillage} onChange={(e) => setGuestVillage(e.target.value)} />
-                <input type="text" placeholder="District" value={guestDistrict} onChange={(e) => setGuestDistrict(e.target.value)} />
-                <input type="text" placeholder="State" value={guestState} onChange={(e) => setGuestState(e.target.value)} />
+                <div className="form-group">
+                  <label>Phone Number</label>
+                  <input
+                    type="tel"
+                    placeholder="Enter your 10-digit phone number"
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone(e.target.value)}
+                  />
+                  {guestPhoneError && <p className="error-text">{guestPhoneError}</p>}
+                </div>
+                <div className="form-group">
+                  <label>Village / Town</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your village or town"
+                    value={guestVillage}
+                    onChange={(e) => setGuestVillage(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>District</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your district"
+                    value={guestDistrict}
+                    onChange={(e) => setGuestDistrict(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>State</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your state"
+                    value={guestState}
+                    onChange={(e) => setGuestState(e.target.value)}
+                  />
+                </div>
                 <button type="submit" className="auth-primary-btn" disabled={submitting}>
                   {submitting ? 'Saving...' : 'Continue as Guest'}
                 </button>
@@ -267,9 +462,15 @@ function AuthGate({ onGuestAccess }) {
             )}
 
             <div className="auth-switch-links">
-              {residentMode !== 'signup' && <span onClick={() => { setResidentMode('signup'); setMessage('') }}>Sign up</span>}
-              {residentMode !== 'login' && <span onClick={() => { setResidentMode('login'); setMessage('') }}>Log in</span>}
-              {residentMode !== 'guest' && <span onClick={() => { setResidentMode('guest'); setMessage('') }}>Continue as guest</span>}
+              {residentMode !== 'signup' && (
+                <span onClick={() => { setResidentMode('signup'); setMessage('') }}>Sign up</span>
+              )}
+              {residentMode !== 'login' && (
+                <span onClick={() => { setResidentMode('login'); setMessage('') }}>Log in</span>
+              )}
+              {residentMode !== 'guest' && (
+                <span onClick={() => { setResidentMode('guest'); setMessage('') }}>Continue as guest</span>
+              )}
             </div>
           </>
         )}
