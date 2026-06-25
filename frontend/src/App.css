@@ -307,7 +307,36 @@ h2 {
   transform: translateY(-3px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
 }
+.auth-form .form-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
 
+.auth-form .form-group label {
+  flex: 0 0 110px;
+  margin-bottom: 0;
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.auth-form .form-group input,
+.auth-form .form-group .auth-password-field {
+  flex: 1;
+}
+
+@media (max-width: 480px) {
+  .auth-form .form-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .auth-form .form-group label {
+    flex: none;
+    text-align: left;
+    margin-bottom: 4px;
+  }
+}
 .auth-logo {
   text-align: center;
   font-size: 2rem;
