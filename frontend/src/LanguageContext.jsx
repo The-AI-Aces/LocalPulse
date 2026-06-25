@@ -180,10 +180,18 @@ const LanguageContext = createContext()
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(localStorage.getItem('localpulse_lang') || 'en')
 
-  function changeLanguage(code) {
-    setLang(code)
-    localStorage.setItem('localpulse_lang', code)
+  const supportedLanguages = ['en', 'hi', 'mr', 'ta']
+
+function changeLanguage(code) {
+  if (!supportedLanguages.includes(code)) {
+    alert('This language is coming soon! Showing English for now.')
+    setLang('en')
+    localStorage.setItem('localpulse_lang', 'en')
+    return
   }
+  setLang(code)
+  localStorage.setItem('localpulse_lang', code)
+}
 
   function t(key) {
     return translations[lang]?.[key] || translations.en[key] || key
