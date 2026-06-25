@@ -30,11 +30,34 @@ export function AuthorityProvider({ children }) {
     setLoading(false)
   }
 
-  async function login(email, password) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) return error.message
-    return null
+  async function login(email, password, expectedRole) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) return 'Invalid credentials.'
+
+  const { data: profileData, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', data.user.id)
+    .single()
+
+  if (profileError || !profileData) {
+    await supabase.auth.signOut()
+    return 'Invalid credentials.'
   }
+
+  if (expectedRole === 'authority' && !profileData.is_authority) {
+    await supabase.auth.signOut()
+    return 'Invalid credentials.'
+  }
+
+  if (expectedRole === 'resident' && profileData.is_authority) {
+    await supabase.auth.signOut()
+    return 'Invalid credentials.'
+  }
+
+  setProfile(profileData)
+  return null
+}
 
   async function signupResident(email, password, name, homeLat, homeLng) {
     const { data, error } = await supabase.auth.signUp({ email, password })

@@ -83,22 +83,22 @@ function AuthGate({ onGuestAccess }) {
   }
 
   async function handleAuthorityLogin(e) {
-    e.preventDefault()
-    setSubmitting(true)
-    setMessage('')
-    const err = await login(authEmail, authPassword)
-    setSubmitting(false)
-    if (err) setMessage(err)
-  }
+  e.preventDefault()
+  setSubmitting(true)
+  setMessage('')
+  const err = await login(authEmail, authPassword, 'authority')
+  setSubmitting(false)
+  if (err) setMessage(err)
+}
 
   async function handleResidentLogin(e) {
-    e.preventDefault()
-    setSubmitting(true)
-    setMessage('')
-    const err = await login(loginEmail, loginPassword)
-    setSubmitting(false)
-    if (err) setMessage(err)
-  }
+  e.preventDefault()
+  setSubmitting(true)
+  setMessage('')
+  const err = await login(loginEmail, loginPassword, 'resident')
+  setSubmitting(false)
+  if (err) setMessage(err)
+}
 
   async function handleSignup(e) {
     e.preventDefault()
