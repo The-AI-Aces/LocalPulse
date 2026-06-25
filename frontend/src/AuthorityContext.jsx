@@ -59,25 +59,24 @@ export function AuthorityProvider({ children }) {
   return null
 }
 
-  async function signupResident(email, password, name, homeLat, homeLng) {
-    const { data, error } = await supabase.auth.signUp({ email, password })
-    if (error) return error.message
+ async function signupResident(email, password, name, homeLat, homeLng) {
+  const { data, error } = await supabase.auth.signUp({ email, password })
+  if (error) return error.message
 
-    if (data.user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: data.user.id,
-        name,
-        is_authority: false,
-        home_lat: homeLat ?? null,
-        home_lng: homeLng ?? null,
-      })
-      if (profileError) return profileError.message
-      await loadProfile(data.user.id)
-    }
-
-    return null
+  if (data.user) {
+    const { error: profileError } = await supabase.from('profiles').insert({
+      id: data.user.id,
+      name,
+      is_authority: false,
+      home_lat: homeLat ?? null,
+      home_lng: homeLng ?? null,
+    })
+    if (profileError) return profileError.message
+    await loadProfile(data.user.id)
   }
 
+  return null
+}
   async function logout() {
     await supabase.auth.signOut()
     setProfile(null)
