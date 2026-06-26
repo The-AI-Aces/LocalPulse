@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
+import { useAuthority } from '../AuthorityContext'
 
 function getDeviceId() {
   let id = localStorage.getItem('localpulse_device_id')
@@ -11,6 +12,7 @@ function getDeviceId() {
 }
 
 function DirectoryPage() {
+  const { isAuthority } = useAuthority()
   const [providers, setProviders] = useState([])
   const [loading, setLoading] = useState(false)
   const [fetchError, setFetchError] = useState('')
@@ -22,6 +24,12 @@ function DirectoryPage() {
   const [contact, setContact] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
+
+  const [editingId, setEditingId] = useState(null)
+  const [editName, setEditName] = useState('')
+  const [editCategory, setEditCategory] = useState('')
+  const [editContact, setEditContact] = useState('')
+  const [editMessage, setEditMessage] = useState('')
 
   const [myRatings, setMyRatings] = useState({})
   const deviceId = getDeviceId()
@@ -105,17 +113,60 @@ function DirectoryPage() {
         setSubmitting(false)
 
         if (error) {
-  if (error.message.includes('unique_phone')) {
-    setSubmitMessage('This phone number is already registered for another listing.')
-  } else {
-    setSubmitMessage('Failed to add listing: ' + error.message)
-  }
-}
+          if (error.message.includes('unique_phone')) {
+            setSubmitMessage('This phone number is already registered for another listing.')
+          } else {
+            setSubmitMessage('Failed to add listing: ' + error.message)
+          }
+        } else {
+          setSubmitMessage('Listing added successfully!')
+          setName('')
+          setContact('')
+          fetchProviders()
+        }
       },
       () => {
         setSubmitMessage('Location access is needed to add a listing.')
       }
     )
+  }
+
+  function startEdit(provider) {
+    setEditingId(provider.id)
+    setEditName(provider.name)
+    setEditCategory(provider.category)
+    setEditContact(provider.contact)
+    setEditMessage('')
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setEditMessage('')
+  }
+
+  async function saveEdit(providerId) {
+    const { error } = await supabase
+      .from('service_providers')
+      .update({ name: editName, category: editCategory, contact: editContact })
+      .eq('id', providerId)
+
+    if (error) {
+      if (error.message.includes('unique_phone')) {
+        setEditMessage('This phone number is already used by another listing.')
+      } else {
+        setEditMessage('Failed to save: ' + error.message)
+      }
+    } else {
+      setEditingId(null)
+      fetchProviders()
+    }
+  }
+
+  async function deleteProvider(providerId) {
+    if (!window.confirm('Delete this listing permanently?')) return
+
+    const { error } = await supabase.from('service_providers').delete().eq('id', providerId)
+    if (!error) fetchProviders()
   }
 
   const filteredProviders =
@@ -185,28 +236,65 @@ function DirectoryPage() {
         {filteredProviders.map((p) => (
           <div key={p.id} className="issue-card">
             <div className="issue-body">
-              <div className="issue-header">
-                <span className="issue-category">{p.name}</span>
-                <span className="issue-status">{p.category}</span>
-              </div>
-              <p className="issue-description">📞 {p.contact}</p>
-              <p className="issue-description">
-                ⭐ {p.avgRating ? `${p.avgRating} average` : 'No ratings yet'}
-              </p>
+              {editingId === p.id ? (
+                <>
+                  <div className="form-group">
+                    <label>Name</label>
+                    <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label>Category</label>
+                    <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)}>
+                      <option value="plumber">Plumber</option>
+                      <option value="electrician">Electrician</option>
+                      <option value="carpenter">Carpenter</option>
+                      <option value="tutor">Tutor</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Contact Number</label>
+                    <input type="text" value={editContact} onChange={(e) => setEditContact(e.target.value)} />
+                  </div>
+                  {editMessage && <p className="error-text">{editMessage}</p>}
+                  <div className="issue-actions">
+                    <button className="upvote-btn" onClick={() => saveEdit(p.id)}>Save</button>
+                    <button className="comment-toggle-btn" onClick={cancelEdit}>Cancel</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="issue-header">
+                    <span className="issue-category">{p.name}</span>
+                    <span className="issue-status">{p.category}</span>
+                  </div>
+                  <p className="issue-description">📞 {p.contact}</p>
+                  <p className="issue-description">
+                    ⭐ {p.avgRating ? `${p.avgRating} average` : 'No ratings yet'}
+                  </p>
 
-              <div className="rating-stars">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span
-                    key={star}
-                    className={`star ${myRatings[p.id] >= star ? 'filled' : ''}`}
-                    onClick={() => submitRating(p.id, star)}
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-              {myRatings[p.id] && (
-                <p className="file-name">You rated this {myRatings[p.id]} star(s)</p>
+                  <div className="rating-stars">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span
+                        key={star}
+                        className={`star ${myRatings[p.id] >= star ? 'filled' : ''}`}
+                        onClick={() => submitRating(p.id, star)}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  {myRatings[p.id] && (
+                    <p className="file-name">You rated this {myRatings[p.id]} star(s)</p>
+                  )}
+
+                  {isAuthority && (
+                    <div className="issue-actions">
+                      <button className="comment-toggle-btn" onClick={() => startEdit(p)}>Edit</button>
+                      <button className="upvote-btn" onClick={() => deleteProvider(p.id)}>Delete</button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
