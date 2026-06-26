@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { supabase } from './supabaseClient'
 import { useAuthority } from './AuthorityContext'
-
+import LanguageSwitcher from './LanguageSwitcher'
 function getDeviceId() {
   let id = localStorage.getItem('localpulse_device_id')
   if (!id) {
@@ -173,10 +173,13 @@ function AuthGate({ onGuestAccess }) {
   }
 
   return (
+    
     <div className="auth-gate">
       <div className="auth-card">
         <h1 className="auth-logo">LocalPulse</h1>
-
+<div className="auth-language-row">
+  <LanguageSwitcher />
+</div>
         <div className="auth-tabs">
           <span
             className={userType === 'resident' ? 'auth-tab active' : 'auth-tab'}
@@ -192,6 +195,8 @@ function AuthGate({ onGuestAccess }) {
           </span>
         </div>
 
+
+<p> </p>
         {userType === 'authority' && (
           <form className="auth-form" onSubmit={handleAuthorityLogin}>
             <div className="form-group">
@@ -352,9 +357,9 @@ function AuthGate({ onGuestAccess }) {
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label>Your Location</label>
-                  <div className="auth-location-row">
+                <div className="form-group auth-location-group">
+  <label>Your Location</label>
+  <div className="auth-location-row">
                     <span
                       className={locationMethod === 'current' ? 'auth-tab active' : 'auth-tab'}
                       onClick={() => setLocationMethod('current')}
@@ -472,6 +477,7 @@ function AuthGate({ onGuestAccess }) {
                 <span onClick={() => { setResidentMode('guest'); setMessage('') }}>Continue as guest</span>
               )}
             </div>
+            
           </>
         )}
 

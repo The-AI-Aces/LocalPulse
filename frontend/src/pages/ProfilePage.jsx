@@ -31,7 +31,7 @@ function ProfilePage() {
   const [phoneError, setPhoneError] = useState('')
 
   useEffect(() => {
-    if (isLoggedIn && !isAuthority && profile) {
+    if (isLoggedIn && profile) {
       setName(profile.name || '')
       setPhone(profile.phone || '')
       setVillage(profile.village || '')
@@ -41,7 +41,25 @@ function ProfilePage() {
       loadGuestProfile()
     }
   }, [isLoggedIn, isAuthority, profile])
+  async function handleSaveAuthorityRegion(e) {
+  e.preventDefault()
+  setSaving(true)
+  setMessage('')
 
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ village, district, state })
+    .eq('id', profile.id)
+    .select()
+    .single()
+
+  setSaving(false)
+  if (error) setMessage('Failed to save: ' + error.message)
+  else {
+    setProfile(data)
+    setMessage('Profile saved!')
+  }
+}
   async function loadGuestProfile() {
     const { data } = await supabase
       .from('resident_profiles')
@@ -110,19 +128,32 @@ function ProfilePage() {
   }
 
   if (isAuthority) {
-    return (
-      <div className="app-container">
-        <h2>Authority Profile</h2>
-        <div className="report-form">
-          <p><strong>Name:</strong> {profile.name}</p>
-          <p><strong>Department:</strong> {profile.department}</p>
-          <p><strong>District:</strong> {profile.district || 'Not set'}</p>
-          <p><strong>State:</strong> {profile.state || 'Not set'}</p>
-          <p className="file-name">District/State are set by the system admin and cannot be edited here.</p>
+  return (
+    <div className="app-container">
+      <h2>Authority Profile</h2>
+      <form className="report-form" onSubmit={handleSaveAuthorityRegion}>
+        <p><strong>Name:</strong> {profile.name}</p>
+        <p><strong>Department:</strong> {profile.department}</p>
+        <div className="form-group">
+          <label>Village / Town</label>
+          <input type="text" value={village} onChange={(e) => setVillage(e.target.value)} />
         </div>
-      </div>
-    )
-  }
+        <div className="form-group">
+          <label>District</label>
+          <input type="text" value={district} onChange={(e) => setDistrict(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label>State</label>
+          <input type="text" value={state} onChange={(e) => setState(e.target.value)} />
+        </div>
+        <button type="submit" className="submit-btn" disabled={saving}>
+          {saving ? 'Saving...' : 'Save Profile'}
+        </button>
+        {message && <p className="submit-message">{message}</p>}
+      </form>
+    </div>
+  )
+}
 
   const handleSave = isLoggedIn ? handleSaveLoggedInResident : handleSaveGuest
 

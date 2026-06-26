@@ -105,13 +105,12 @@ function DirectoryPage() {
         setSubmitting(false)
 
         if (error) {
-          setSubmitMessage('Failed to add listing: ' + error.message)
-        } else {
-          setSubmitMessage('Listing added successfully!')
-          setName('')
-          setContact('')
-          fetchProviders()
-        }
+  if (error.message.includes('unique_phone')) {
+    setSubmitMessage('This phone number is already registered for another listing.')
+  } else {
+    setSubmitMessage('Failed to add listing: ' + error.message)
+  }
+}
       },
       () => {
         setSubmitMessage('Location access is needed to add a listing.')

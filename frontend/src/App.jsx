@@ -33,15 +33,8 @@ function Gate() {
   const hasAccess = isAuthority || isLoggedIn || guestActive
 
   if (!hasAccess) {
-    return (
-      <>
-        <div className="gate-language-bar">
-          <LanguageSwitcher />
-        </div>
-        <AuthGate onGuestAccess={grantGuestAccess} />
-      </>
-    )
-  }
+  return <AuthGate onGuestAccess={grantGuestAccess} />
+}
 
   return <AppContent onSwitchAccount={switchAccount} />
 }
