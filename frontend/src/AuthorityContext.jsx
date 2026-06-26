@@ -59,7 +59,7 @@ export function AuthorityProvider({ children }) {
   return null
 }
 
- async function signupResident(email, password, name, phone, village, district, state, homeLat, homeLng) {
+async function signupResident(email, password, name, phone, village, district, state, homeLat, homeLng) {
   const { data, error } = await supabase.auth.signUp({ email, password })
 
   if (error) {
@@ -71,15 +71,16 @@ export function AuthorityProvider({ children }) {
     }
     return error.message
   }
+
   if (data.user) {
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: data.user.id,
-      name,
-      is_authority: false,
-      home_lat: homeLat ?? null,
-      home_lng: homeLng ?? null,
-    })
-    if (profileError) return profileError.message
+    // The database trigger already created a bare profile row.
+    // We now just fill in the details.
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ name, phone, village, district, state, home_lat: homeLat, home_lng: homeLng })
+      .eq('id', data.user.id)
+
+    if (updateError) return updateError.message
     await loadProfile(data.user.id)
   }
 

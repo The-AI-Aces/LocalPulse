@@ -12,7 +12,6 @@ import AccountStatus from './AccountStatus'
 import NotificationBell from './NotificationBell'
 import LanguageSwitcher from './LanguageSwitcher'
 import './App.css'
-
 function Gate() {
   const { isAuthority, isLoggedIn, loading } = useAuthority()
   const [guestActive, setGuestActive] = useState(
@@ -34,7 +33,14 @@ function Gate() {
   const hasAccess = isAuthority || isLoggedIn || guestActive
 
   if (!hasAccess) {
-    return <AuthGate onGuestAccess={grantGuestAccess} />
+    return (
+      <>
+        <div className="gate-language-bar">
+          <LanguageSwitcher />
+        </div>
+        <AuthGate onGuestAccess={grantGuestAccess} />
+      </>
+    )
   }
 
   return <AppContent onSwitchAccount={switchAccount} />

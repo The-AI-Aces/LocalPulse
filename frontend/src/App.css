@@ -313,7 +313,16 @@ h2 {
   gap: 10px;
   margin-bottom: 12px;
 }
+.gate-language-bar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+}
 
+.gate-language-bar .language-switcher {
+  margin: 0;
+}
 .auth-form .form-group label {
   flex: 0 0 110px;
   margin-bottom: 0;
