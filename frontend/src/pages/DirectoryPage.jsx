@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 
+function getDeviceId() {
+  let id = localStorage.getItem('localpulse_device_id')
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem('localpulse_device_id', id)
+  }
+  return id
+}
+
 function DirectoryPage() {
   const [providers, setProviders] = useState([])
   const [loading, setLoading] = useState(false)
@@ -14,6 +23,9 @@ function DirectoryPage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
 
+  const [myRatings, setMyRatings] = useState({})
+  const deviceId = getDeviceId()
+
   useEffect(() => {
     fetchProviders()
   }, [])
@@ -22,18 +34,56 @@ function DirectoryPage() {
     setLoading(true)
     setFetchError('')
 
-    const { data, error } = await supabase
+    const { data: providerData, error } = await supabase
       .from('service_providers')
       .select('*')
-      .order('rating', { ascending: false })
 
     if (error) {
       setFetchError('Failed to load providers: ' + error.message)
       setProviders([])
-    } else {
-      setProviders(data)
+      setLoading(false)
+      return
     }
+
+    const ids = providerData.map((p) => p.id)
+    let avgMap = {}
+    let myMap = {}
+
+    if (ids.length > 0) {
+      const { data: ratings } = await supabase
+        .from('provider_ratings')
+        .select('provider_id, rating, user_id')
+        .in('provider_id', ids)
+
+      const sums = {}
+      const counts = {}
+      ratings?.forEach((r) => {
+        sums[r.provider_id] = (sums[r.provider_id] || 0) + r.rating
+        counts[r.provider_id] = (counts[r.provider_id] || 0) + 1
+        if (r.user_id === deviceId) myMap[r.provider_id] = r.rating
+      })
+      ids.forEach((id) => {
+        avgMap[id] = counts[id] ? (sums[id] / counts[id]).toFixed(1) : null
+      })
+    }
+
+    const merged = providerData.map((p) => ({ ...p, avgRating: avgMap[p.id] }))
+    setProviders(merged)
+    setMyRatings(myMap)
     setLoading(false)
+  }
+
+  async function submitRating(providerId, ratingValue) {
+    const { error } = await supabase.from('provider_ratings').upsert({
+      provider_id: providerId,
+      user_id: deviceId,
+      rating: ratingValue,
+    })
+
+    if (!error) {
+      setMyRatings((prev) => ({ ...prev, [providerId]: ratingValue }))
+      fetchProviders()
+    }
   }
 
   async function handleSubmit(e) {
@@ -141,7 +191,24 @@ function DirectoryPage() {
                 <span className="issue-status">{p.category}</span>
               </div>
               <p className="issue-description">📞 {p.contact}</p>
-              <p className="issue-description">⭐ {p.rating || 'No ratings yet'}</p>
+              <p className="issue-description">
+                ⭐ {p.avgRating ? `${p.avgRating} average` : 'No ratings yet'}
+              </p>
+
+              <div className="rating-stars">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    className={`star ${myRatings[p.id] >= star ? 'filled' : ''}`}
+                    onClick={() => submitRating(p.id, star)}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+              {myRatings[p.id] && (
+                <p className="file-name">You rated this {myRatings[p.id]} star(s)</p>
+              )}
             </div>
           </div>
         ))}

@@ -319,7 +319,22 @@ h2 {
   right: 16px;
   z-index: 10;
 }
+.rating-stars {
+  margin-top: 8px;
+  font-size: 1.4rem;
+}
 
+.star {
+  cursor: pointer;
+  color: #d1d5db;
+}
+
+.star.filled {
+  color: #f59e0b;
+}
+.event-card {
+  border-left: 4px solid var(--teal);
+}
 .gate-language-bar .language-switcher {
   margin: 0;
 }

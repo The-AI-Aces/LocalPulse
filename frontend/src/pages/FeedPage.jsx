@@ -29,6 +29,7 @@ function FeedPage() {
   const [myRegion, setMyRegion] = useState({ village: '', district: '', state: '' })
 
   const [issues, setIssues] = useState([])
+  const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(false)
   const [fetchError, setFetchError] = useState('')
 
@@ -82,10 +83,10 @@ function FeedPage() {
 
   useEffect(() => {
     if (scope === 'near' && location) {
-      fetchIssues(location)
+      fetchAll(location)
       saveAreaSubscription(location)
     } else if (scope !== 'near') {
-      fetchByRegion()
+      fetchAllByRegion()
     }
   }, [location, radiusValue, radiusUnit, sortBy, scope, myRegion])
 
@@ -99,46 +100,62 @@ function FeedPage() {
     })
   }
 
-  async function fetchIssues(center) {
+  async function fetchAll(center) {
     setLoading(true)
     setFetchError('')
 
-    const { data, error } = await supabase.rpc('nearby_issues', {
+    const { data: issueData, error: issueError } = await supabase.rpc('nearby_issues', {
       center_lat: center.lat,
       center_lng: center.lng,
       radius_meters: radiusInMeters,
     })
 
-    if (error) {
-      setFetchError('Failed to load issues: ' + error.message)
-      setIssues([])
+    const { data: eventData, error: eventError } = await supabase.rpc('nearby_events', {
+      center_lat: center.lat,
+      center_lng: center.lng,
+      radius_meters: radiusInMeters,
+    })
+
+    if (issueError) {
+      setFetchError('Failed to load issues: ' + issueError.message)
       setLoading(false)
       return
     }
 
-    await applyVotesAndSort(data)
+    setEvents(eventError ? [] : eventData)
+    await applyVotesAndSort(issueData || [])
   }
 
-  async function fetchByRegion() {
+  async function fetchAllByRegion() {
     setLoading(true)
     setFetchError('')
 
-    let query = supabase.from('issues').select('*')
+    let issueQuery = supabase.from('issues').select('*')
+    let eventQuery = supabase.from('events').select('*')
 
-    if (scope === 'village' && myRegion.village) query = query.eq('village', myRegion.village)
-    if (scope === 'district' && myRegion.district) query = query.eq('district', myRegion.district)
-    if (scope === 'state' && myRegion.state) query = query.eq('state', myRegion.state)
+    if (scope === 'village' && myRegion.village) {
+      issueQuery = issueQuery.eq('village', myRegion.village)
+    }
+    if (scope === 'district' && myRegion.district) {
+      issueQuery = issueQuery.eq('district', myRegion.district)
+    }
+    if (scope === 'state' && myRegion.state) {
+      issueQuery = issueQuery.eq('state', myRegion.state)
+    }
+    // Events don't have village/district/state columns, so for 'all' and region
+    // scopes we just show all events (radius doesn't apply outside 'near' mode)
 
-    const { data, error } = await query
+    const { data: issueData, error: issueError } = await issueQuery
+    const { data: eventData } = await eventQuery
 
-    if (error) {
-      setFetchError('Failed to load issues: ' + error.message)
-      setIssues([])
+    if (issueError) {
+      setFetchError('Failed to load issues: ' + issueError.message)
       setLoading(false)
       return
     }
 
-    await applyVotesAndSort(data)
+    setEvents(eventData || [])
+    await applyVotesAndSort(issueData || [])
   }
 
   async function applyVotesAndSort(data) {
@@ -170,6 +187,31 @@ function FeedPage() {
     setIssues(list)
     list.forEach((issue) => loadStatusHistory(issue.id))
     setLoading(false)
+  }
+
+  // Merge issues + events into one timeline, sorted by recency (upvote sort only reorders issues, events stay date-sorted within the merge)
+  function getMergedFeed() {
+    const taggedIssues = issues.map((i) => ({ ...i, _type: 'issue' }))
+    const taggedEvents = events.map((e) => ({ ...e, _type: 'event' }))
+    const merged = [...taggedIssues, ...taggedEvents]
+
+    if (sortBy === 'upvotes') {
+      // Keep issues sorted by upvotes among themselves, events sorted by date, but interleave by date for a natural read
+      return merged.sort((a, b) => {
+        const aDate = a._type === 'event' ? new Date(a.event_date) : new Date(a.created_at)
+        const bDate = b._type === 'event' ? new Date(b.event_date) : new Date(b.created_at)
+        if (a._type === 'issue' && b._type === 'issue') {
+          return (upvoteCounts[b.id] || 0) - (upvoteCounts[a.id] || 0)
+        }
+        return bDate - aDate
+      })
+    }
+
+    return merged.sort((a, b) => {
+      const aDate = a._type === 'event' ? new Date(a.event_date) : new Date(a.created_at)
+      const bDate = b._type === 'event' ? new Date(b.event_date) : new Date(b.created_at)
+      return bDate - aDate
+    })
   }
 
   async function toggleUpvote(issueId) {
@@ -336,6 +378,8 @@ function FeedPage() {
     return `${days}d ago`
   }
 
+  const mergedFeed = getMergedFeed()
+
   return (
     <div className="app-container">
       <h2>Community Feed</h2>
@@ -399,98 +443,114 @@ function FeedPage() {
         </select>
       </div>
 
-      {loading && <p>Loading issues...</p>}
+      {loading && <p>Loading...</p>}
       {fetchError && <p className="error-text">{fetchError}</p>}
 
-      {!loading && issues.length === 0 && !fetchError && (
-        <p>No issues reported in this area yet.</p>
+      {!loading && mergedFeed.length === 0 && !fetchError && (
+        <p>No issues or events reported in this area yet.</p>
       )}
 
       <div className="feed-list">
-        {issues.map((issue) => (
-          <div key={issue.id} className="issue-card">
-            {issue.photo_url && (
-              issue.photo_url.endsWith('.webm') ? (
-                <video src={issue.photo_url} controls className="issue-media" />
-              ) : (
-                <img src={issue.photo_url} alt={issue.category} className="issue-media" />
-              )
-            )}
-            <div className="issue-body">
-              <div className="issue-header">
-                <span className="issue-category">{issue.category}</span>
-                {isAuthority ? (
-                  <select
-                    className="status-dropdown"
-                    value={issue.status}
-                    onChange={(e) => updateStatus(issue.id, e.target.value)}
-                  >
-                    <option value="Open">Open</option>
-                    <option value="Under Review">Under Review</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Resolved">Resolved</option>
-                  </select>
+        {mergedFeed.map((item) =>
+          item._type === 'event' ? (
+            <div key={`event-${item.id}`} className="issue-card event-card">
+              <div className="issue-body">
+                <div className="issue-header">
+                  <span className="issue-category">📅 {item.org_name}</span>
+                  <span className="issue-status">Event</span>
+                </div>
+                <p className="event-title">{item.title}</p>
+                <p className="issue-description">{item.description}</p>
+                <div className="issue-meta">
+                  <span>{new Date(item.event_date).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div key={`issue-${item.id}`} className="issue-card">
+              {item.photo_url && (
+                item.photo_url.endsWith('.webm') ? (
+                  <video src={item.photo_url} controls className="issue-media" />
                 ) : (
-                  <span className="issue-status">{issue.status}</span>
+                  <img src={item.photo_url} alt={item.category} className="issue-media" />
+                )
+              )}
+              <div className="issue-body">
+                <div className="issue-header">
+                  <span className="issue-category">{item.category}</span>
+                  {isAuthority ? (
+                    <select
+                      className="status-dropdown"
+                      value={item.status}
+                      onChange={(e) => updateStatus(item.id, e.target.value)}
+                    >
+                      <option value="Open">Open</option>
+                      <option value="Under Review">Under Review</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Resolved">Resolved</option>
+                    </select>
+                  ) : (
+                    <span className="issue-status">{item.status}</span>
+                  )}
+                </div>
+                <p className="issue-description">{item.description}</p>
+                <div className="issue-meta">
+                  <span>{item.is_anonymous ? 'Anonymous' : 'Resident'}</span>
+                  <span>{timeAgo(item.created_at)}</span>
+                </div>
+
+                {(item.village || item.district || item.state) && (
+                  <p className="file-name">
+                    📍 {[item.village, item.district, item.state].filter(Boolean).join(', ')}
+                  </p>
+                )}
+
+                {statusHistory[item.id] && (
+                  <p className="status-update-note">
+                    Updated to "{statusHistory[item.id].new_status}" by{' '}
+                    {statusHistory[item.id].authority_name} ({statusHistory[item.id].department}) ·{' '}
+                    {timeAgo(statusHistory[item.id].changed_at)}
+                  </p>
+                )}
+
+                <div className="issue-actions">
+                  <button
+                    className={`upvote-btn ${myUpvotes.has(item.id) ? 'voted' : ''}`}
+                    onClick={() => toggleUpvote(item.id)}
+                  >
+                    ▲ {upvoteCounts[item.id] || 0}
+                  </button>
+                  <button className="comment-toggle-btn" onClick={() => loadComments(item.id)}>
+                    💬 Comments
+                  </button>
+                </div>
+
+                {openComments === item.id && (
+                  <div className="comments-section">
+                    {(commentsByIssue[item.id] || []).map((c) => (
+                      <p key={c.id} className="comment-line">
+                        {c.text}
+                      </p>
+                    ))}
+                    {(commentsByIssue[item.id] || []).length === 0 && (
+                      <p className="comment-line empty">No comments yet.</p>
+                    )}
+
+                    <div className="comment-input-row">
+                      <input
+                        type="text"
+                        placeholder="Add a comment..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                      />
+                      <button onClick={() => postComment(item.id)}>Post</button>
+                    </div>
+                  </div>
                 )}
               </div>
-              <p className="issue-description">{issue.description}</p>
-              <div className="issue-meta">
-                <span>{issue.is_anonymous ? 'Anonymous' : 'Resident'}</span>
-                <span>{timeAgo(issue.created_at)}</span>
-              </div>
-
-              {(issue.village || issue.district || issue.state) && (
-                <p className="file-name">
-                  📍 {[issue.village, issue.district, issue.state].filter(Boolean).join(', ')}
-                </p>
-              )}
-
-              {statusHistory[issue.id] && (
-                <p className="status-update-note">
-                  Updated to "{statusHistory[issue.id].new_status}" by{' '}
-                  {statusHistory[issue.id].authority_name} ({statusHistory[issue.id].department}) ·{' '}
-                  {timeAgo(statusHistory[issue.id].changed_at)}
-                </p>
-              )}
-
-              <div className="issue-actions">
-                <button
-                  className={`upvote-btn ${myUpvotes.has(issue.id) ? 'voted' : ''}`}
-                  onClick={() => toggleUpvote(issue.id)}
-                >
-                  ▲ {upvoteCounts[issue.id] || 0}
-                </button>
-                <button className="comment-toggle-btn" onClick={() => loadComments(issue.id)}>
-                  💬 Comments
-                </button>
-              </div>
-
-              {openComments === issue.id && (
-                <div className="comments-section">
-                  {(commentsByIssue[issue.id] || []).map((c) => (
-                    <p key={c.id} className="comment-line">
-                      {c.text}
-                    </p>
-                  ))}
-                  {(commentsByIssue[issue.id] || []).length === 0 && (
-                    <p className="comment-line empty">No comments yet.</p>
-                  )}
-
-                  <div className="comment-input-row">
-                    <input
-                      type="text"
-                      placeholder="Add a comment..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                    />
-                    <button onClick={() => postComment(issue.id)}>Post</button>
-                  </div>
-                </div>
-              )}
             </div>
-          </div>
-        ))}
+          )
+        )}
       </div>
     </div>
   )
