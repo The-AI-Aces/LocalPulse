@@ -2,14 +2,12 @@ import { createContext, useContext, useState } from 'react'
 
 const translations = {
   en: {
-    appName: 'LocalPulse',
-    feed: 'Feed', report: 'Report', events: 'Events', directory: 'Directory', profile: 'Profile',
+    appName: 'LocalPulse', feed: 'Feed', report: 'Report', events: 'Events', directory: 'Directory', profile: 'Profile',
     communityFeed: 'Community Feed', filterBy: 'Filter by', nearMe: 'Near Me (radius)',
     myVillage: 'My Village', myDistrict: 'My District', myState: 'My State', allIndia: 'All India',
     radius: 'Radius', meters: 'meters', km: 'km', searchPlaceholder: 'Search a place, street, or area...',
     search: 'Search', searching: 'Searching...', sortBy: 'Sort by', mostRecent: 'Most recent',
     mostUpvoted: 'Most upvoted', loadingIssues: 'Loading issues...', noIssuesArea: 'No issues reported in this area yet.',
-    regionNotSet: "Your {scope} isn't set yet. Add it in your Profile page to use this filter.",
     anonymous: 'Anonymous', resident: 'Resident', comments: 'Comments', noCommentsYet: 'No comments yet.',
     addCommentPlaceholder: 'Add a comment...', post: 'Post',
     open: 'Open', underReview: 'Under Review', inProgress: 'In Progress', resolved: 'Resolved',
@@ -28,10 +26,10 @@ const translations = {
     addListing: 'Add a Listing', name: 'Name', contactNumber: 'Contact Number', addListingBtn: 'Add Listing',
     adding: 'Adding...', loadingProviders: 'Loading providers...', noProviders: 'No service providers listed yet.', noRatings: 'No ratings yet',
     myProfile: 'My Profile', authorityProfile: 'Authority Profile', department: 'Department',
-    district: 'District', state: 'State', notSet: 'Not set', adminSetNote: 'District/State are set by the system admin and cannot be edited here.',
+    district: 'District', state: 'State', notSet: 'Not set',
     phoneNumber: 'Phone Number', villageTown: 'Village / Town', saveProfile: 'Save Profile', saving: 'Saving...', profileSaved: 'Profile saved!',
     notifications: 'Notifications', noNotifications: 'No notifications yet.',
-    resident_: 'Resident', authority_: 'Authority', email: 'Email', password: 'Password',
+    residentTab: 'Resident', authorityTab: 'Authority', email: 'Email', password: 'Password',
     show: 'Show', hide: 'Hide', login: 'Log In', loggingIn: 'Logging in...', signup: 'Sign Up',
     creatingAccount: 'Creating account...', continueAsGuest: 'Continue as Guest', fullName: 'Enter your full name',
     enterEmail: 'Enter your email', enterPassword: 'Enter your password', enter10digit: 'Enter your 10-digit phone number',
@@ -40,16 +38,15 @@ const translations = {
     yourLocation: 'Your Location', useCurrentLocation: 'Use Current Location', enterManually: 'Enter Manually',
     detectMyLocation: 'Detect My Location', detecting: 'Detecting...', enterAddress: 'Enter your address or area', find: 'Find',
     locationSet: 'Location set', signUpLink: 'Sign up', loginLink: 'Log in', guestLink: 'Continue as guest',
+    logOut: 'Log out', switchAccount: 'Switch Account', guest: 'Guest',
   },
   hi: {
-    appName: 'लोकलपल्स',
-    feed: 'फ़ीड', report: 'रिपोर्ट', events: 'कार्यक्रम', directory: 'निर्देशिका', profile: 'प्रोफ़ाइल',
+    appName: 'लोकलपल्स', feed: 'फ़ीड', report: 'रिपोर्ट', events: 'कार्यक्रम', directory: 'निर्देशिका', profile: 'प्रोफ़ाइल',
     communityFeed: 'सामुदायिक फ़ीड', filterBy: 'फ़िल्टर करें', nearMe: 'मेरे पास (दूरी)',
     myVillage: 'मेरा गाँव', myDistrict: 'मेरा जिला', myState: 'मेरा राज्य', allIndia: 'पूरा भारत',
     radius: 'दूरी', meters: 'मीटर', km: 'किमी', searchPlaceholder: 'स्थान, सड़क या क्षेत्र खोजें...',
     search: 'खोजें', searching: 'खोज रहे हैं...', sortBy: 'क्रमबद्ध करें', mostRecent: 'सबसे नया',
     mostUpvoted: 'सबसे अधिक वोट', loadingIssues: 'समस्याएं लोड हो रही हैं...', noIssuesArea: 'इस क्षेत्र में अभी तक कोई समस्या दर्ज नहीं हुई।',
-    regionNotSet: 'आपका {scope} अभी सेट नहीं है। इस फ़िल्टर का उपयोग करने के लिए प्रोफ़ाइल में जाकर जोड़ें।',
     anonymous: 'गुमनाम', resident: 'निवासी', comments: 'टिप्पणियाँ', noCommentsYet: 'अभी कोई टिप्पणी नहीं।',
     addCommentPlaceholder: 'टिप्पणी जोड़ें...', post: 'पोस्ट करें',
     open: 'खुला', underReview: 'समीक्षा में', inProgress: 'प्रगति में', resolved: 'हल हो गया',
@@ -68,10 +65,10 @@ const translations = {
     addListing: 'लिस्टिंग जोड़ें', name: 'नाम', contactNumber: 'संपर्क नंबर', addListingBtn: 'लिस्टिंग जोड़ें',
     adding: 'जोड़ा जा रहा है...', loadingProviders: 'लोड हो रहा है...', noProviders: 'अभी कोई सेवा प्रदाता सूचीबद्ध नहीं है।', noRatings: 'अभी रेटिंग नहीं',
     myProfile: 'मेरी प्रोफ़ाइल', authorityProfile: 'प्राधिकरण प्रोफ़ाइल', department: 'विभाग',
-    district: 'जिला', state: 'राज्य', notSet: 'सेट नहीं है', adminSetNote: 'जिला/राज्य व्यवस्थापक द्वारा सेट किए जाते हैं और यहां संपादित नहीं किए जा सकते।',
+    district: 'जिला', state: 'राज्य', notSet: 'सेट नहीं है',
     phoneNumber: 'फोन नंबर', villageTown: 'गाँव / शहर', saveProfile: 'प्रोफ़ाइल सहेजें', saving: 'सहेजा जा रहा है...', profileSaved: 'प्रोफ़ाइल सहेजी गई!',
     notifications: 'सूचनाएं', noNotifications: 'अभी कोई सूचना नहीं।',
-    resident_: 'निवासी', authority_: 'प्राधिकरण', email: 'ईमेल', password: 'पासवर्ड',
+    residentTab: 'निवासी', authorityTab: 'प्राधिकरण', email: 'ईमेल', password: 'पासवर्ड',
     show: 'दिखाएं', hide: 'छिपाएं', login: 'लॉग इन करें', loggingIn: 'लॉग इन हो रहा है...', signup: 'साइन अप करें',
     creatingAccount: 'खाता बनाया जा रहा है...', continueAsGuest: 'गेस्ट के रूप में जारी रखें', fullName: 'अपना पूरा नाम लिखें',
     enterEmail: 'अपना ईमेल लिखें', enterPassword: 'अपना पासवर्ड लिखें', enter10digit: 'अपना 10 अंकों का फोन नंबर लिखें',
@@ -80,16 +77,15 @@ const translations = {
     yourLocation: 'आपकी लोकेशन', useCurrentLocation: 'वर्तमान लोकेशन उपयोग करें', enterManually: 'मैन्युअल रूप से लिखें',
     detectMyLocation: 'मेरी लोकेशन पता करें', detecting: 'पता की जा रही है...', enterAddress: 'अपना पता या क्षेत्र लिखें', find: 'खोजें',
     locationSet: 'लोकेशन सेट हो गई', signUpLink: 'साइन अप करें', loginLink: 'लॉग इन करें', guestLink: 'गेस्ट के रूप में जारी रखें',
+    logOut: 'लॉग आउट', switchAccount: 'खाता बदलें', guest: 'गेस्ट',
   },
   mr: {
-    appName: 'लोकलपल्स',
-    feed: 'फीड', report: 'तक्रार', events: 'कार्यक्रम', directory: 'निर्देशिका', profile: 'प्रोफाइल',
+    appName: 'लोकलपल्स', feed: 'फीड', report: 'तक्रार', events: 'कार्यक्रम', directory: 'निर्देशिका', profile: 'प्रोफाइल',
     communityFeed: 'सामुदायिक फीड', filterBy: 'फिल्टर करा', nearMe: 'माझ्या जवळ (परिसर)',
     myVillage: 'माझे गाव', myDistrict: 'माझा जिल्हा', myState: 'माझे राज्य', allIndia: 'संपूर्ण भारत',
     radius: 'परिसर', meters: 'मीटर', km: 'किमी', searchPlaceholder: 'ठिकाण, रस्ता किंवा परिसर शोधा...',
     search: 'शोधा', searching: 'शोधत आहे...', sortBy: 'क्रमवारी', mostRecent: 'सर्वात नवीन',
     mostUpvoted: 'सर्वाधिक मतदान', loadingIssues: 'समस्या लोड होत आहेत...', noIssuesArea: 'या भागात अद्याप कोणतीही समस्या नोंदवली नाही.',
-    regionNotSet: 'तुमचे {scope} अद्याप सेट केलेले नाही. हे फिल्टर वापरण्यासाठी प्रोफाइलमध्ये जाऊन जोडा.',
     anonymous: 'अनामिक', resident: 'रहिवासी', comments: 'टिप्पण्या', noCommentsYet: 'अद्याप टिप्पण्या नाहीत.',
     addCommentPlaceholder: 'टिप्पणी जोडा...', post: 'पोस्ट करा',
     open: 'उघडे', underReview: 'पुनरावलोकनात', inProgress: 'प्रगतीत', resolved: 'निराकरण झाले',
@@ -108,10 +104,10 @@ const translations = {
     addListing: 'लिस्टिंग जोडा', name: 'नाव', contactNumber: 'संपर्क क्रमांक', addListingBtn: 'लिस्टिंग जोडा',
     adding: 'जोडत आहे...', loadingProviders: 'लोड होत आहे...', noProviders: 'अद्याप कोणतेही सेवा पुरवठादार सूचीबद्ध नाहीत.', noRatings: 'अद्याप रेटिंग नाही',
     myProfile: 'माझे प्रोफाइल', authorityProfile: 'अधिकारी प्रोफाइल', department: 'विभाग',
-    district: 'जिल्हा', state: 'राज्य', notSet: 'सेट केलेले नाही', adminSetNote: 'जिल्हा/राज्य प्रशासकाद्वारे सेट केले जाते आणि येथे संपादित करता येत नाही.',
+    district: 'जिल्हा', state: 'राज्य', notSet: 'सेट केलेले नाही',
     phoneNumber: 'फोन नंबर', villageTown: 'गाव / शहर', saveProfile: 'प्रोफाइल जतन करा', saving: 'जतन होत आहे...', profileSaved: 'प्रोफाइल जतन झाले!',
     notifications: 'सूचना', noNotifications: 'अद्याप सूचना नाहीत.',
-    resident_: 'रहिवासी', authority_: 'अधिकारी', email: 'ईमेल', password: 'पासवर्ड',
+    residentTab: 'रहिवासी', authorityTab: 'अधिकारी', email: 'ईमेल', password: 'पासवर्ड',
     show: 'दाखवा', hide: 'लपवा', login: 'लॉग इन करा', loggingIn: 'लॉग इन होत आहे...', signup: 'साइन अप करा',
     creatingAccount: 'खाते तयार होत आहे...', continueAsGuest: 'गेस्ट म्हणून सुरू ठेवा', fullName: 'तुमचे पूर्ण नाव लिहा',
     enterEmail: 'तुमचा ईमेल लिहा', enterPassword: 'तुमचा पासवर्ड लिहा', enter10digit: 'तुमचा 10 अंकी फोन नंबर लिहा',
@@ -120,16 +116,15 @@ const translations = {
     yourLocation: 'तुमचे स्थान', useCurrentLocation: 'सध्याचे स्थान वापरा', enterManually: 'स्वतः लिहा',
     detectMyLocation: 'माझे स्थान शोधा', detecting: 'शोधत आहे...', enterAddress: 'तुमचा पत्ता किंवा परिसर लिहा', find: 'शोधा',
     locationSet: 'स्थान सेट झाले', signUpLink: 'साइन अप करा', loginLink: 'लॉग इन करा', guestLink: 'गेस्ट म्हणून सुरू ठेवा',
+    logOut: 'लॉग आउट', switchAccount: 'खाते बदला', guest: 'गेस्ट',
   },
   ta: {
-    appName: 'லோக்கல்பல்ஸ்',
-    feed: 'ஃபீட்', report: 'புகார்', events: 'நிகழ்வுகள்', directory: 'அடைவு', profile: 'சுயவிவரம்',
+    appName: 'லோக்கல்பல்ஸ்', feed: 'ஃபீட்', report: 'புகார்', events: 'நிகழ்வுகள்', directory: 'அடைவு', profile: 'சுயவிவரம்',
     communityFeed: 'சமூக ஃபீட்', filterBy: 'வடிகட்டு', nearMe: 'அருகில் (சுற்றளவு)',
     myVillage: 'எனது கிராமம்', myDistrict: 'எனது மாவட்டம்', myState: 'எனது மாநிலம்', allIndia: 'இந்தியா முழுவதும்',
     radius: 'சுற்றளவு', meters: 'மீட்டர்', km: 'கி.மீ', searchPlaceholder: 'இடம், தெரு அல்லது பகுதியைத் தேடவும்...',
     search: 'தேடு', searching: 'தேடுகிறது...', sortBy: 'வரிசைப்படுத்து', mostRecent: 'புதியவை',
     mostUpvoted: 'அதிக வோட்டு', loadingIssues: 'சிக்கல்கள் ஏற்றப்படுகின்றன...', noIssuesArea: 'இந்தப் பகுதியில் இன்னும் சிக்கல்கள் இல்லை.',
-    regionNotSet: 'உங்கள் {scope} இன்னும் அமைக்கப்படவில்லை. இந்த வடிகட்டியைப் பயன்படுத்த சுயவிவரத்தில் சேர்க்கவும்.',
     anonymous: 'அநாமதேயம்', resident: 'குடியிருப்பாளர்', comments: 'கருத்துகள்', noCommentsYet: 'இன்னும் கருத்துகள் இல்லை.',
     addCommentPlaceholder: 'கருத்து சேர்க்கவும்...', post: 'பதிவிடு',
     open: 'திறந்துள்ளது', underReview: 'மறுஆய்வில்', inProgress: 'நடைபெறுகிறது', resolved: 'தீர்க்கப்பட்டது',
@@ -148,10 +143,10 @@ const translations = {
     addListing: 'பட்டியல் சேர்க்கவும்', name: 'பெயர்', contactNumber: 'தொடர்பு எண்', addListingBtn: 'பட்டியல் சேர்க்கவும்',
     adding: 'சேர்க்கிறது...', loadingProviders: 'ஏற்றப்படுகிறது...', noProviders: 'இன்னும் சேவை வழங்குநர்கள் பட்டியலிடப்படவில்லை.', noRatings: 'இன்னும் மதிப்பீடு இல்லை',
     myProfile: 'எனது சுயவிவரம்', authorityProfile: 'அதிகாரி சுயவிவரம்', department: 'துறை',
-    district: 'மாவட்டம்', state: 'மாநிலம்', notSet: 'அமைக்கப்படவில்லை', adminSetNote: 'மாவட்டம்/மாநிலம் நிர்வாகியால் அமைக்கப்படும், இங்கே திருத்த முடியாது.',
+    district: 'மாவட்டம்', state: 'மாநிலம்', notSet: 'அமைக்கப்படவில்லை',
     phoneNumber: 'தொலைபேசி எண்', villageTown: 'கிராமம் / நகரம்', saveProfile: 'சுயவிவரத்தை சேமி', saving: 'சேமிக்கிறது...', profileSaved: 'சுயவிவரம் சேமிக்கப்பட்டது!',
     notifications: 'அறிவிப்புகள்', noNotifications: 'இன்னும் அறிவிப்புகள் இல்லை.',
-    resident_: 'குடியிருப்பாளர்', authority_: 'அதிகாரி', email: 'மின்னஞ்சல்', password: 'கடவுச்சொல்',
+    residentTab: 'குடியிருப்பாளர்', authorityTab: 'அதிகாரி', email: 'மின்னஞ்சல்', password: 'கடவுச்சொல்',
     show: 'காட்டு', hide: 'மறை', login: 'உள்நுழைய', loggingIn: 'உள்நுழைகிறது...', signup: 'பதிவு செய்',
     creatingAccount: 'கணக்கு உருவாக்கப்படுகிறது...', continueAsGuest: 'விருந்தினராக தொடரவும்', fullName: 'உங்கள் முழுப் பெயரை உள்ளிடவும்',
     enterEmail: 'உங்கள் மின்னஞ்சலை உள்ளிடவும்', enterPassword: 'உங்கள் கடவுச்சொல்லை உள்ளிடவும்', enter10digit: 'உங்கள் 10 இலக்க தொலைபேசி எண்ணை உள்ளிடவும்',
@@ -160,6 +155,7 @@ const translations = {
     yourLocation: 'உங்கள் இடம்', useCurrentLocation: 'தற்போதைய இடத்தைப் பயன்படுத்து', enterManually: 'கைமுறையாக உள்ளிடவும்',
     detectMyLocation: 'எனது இடத்தைக் கண்டறி', detecting: 'கண்டறிகிறது...', enterAddress: 'உங்கள் முகவரி அல்லது பகுதியை உள்ளிடவும்', find: 'கண்டுபிடி',
     locationSet: 'இடம் அமைக்கப்பட்டது', signUpLink: 'பதிவு செய்', loginLink: 'உள்நுழைய', guestLink: 'விருந்தினராக தொடரவும்',
+    logOut: 'வெளியேறு', switchAccount: 'கணக்கு மாற்று', guest: 'விருந்தினர்',
   },
 }
 
@@ -168,46 +164,75 @@ export const availableLanguages = [
   { code: 'hi', label: 'हिन्दी (Hindi)' },
   { code: 'mr', label: 'मराठी (Marathi)' },
   { code: 'ta', label: 'தமிழ் (Tamil)' },
-  { code: 'bn', label: 'বাংলা (Bengali) — coming soon' },
-  { code: 'te', label: 'తెలుగు (Telugu) — coming soon' },
-  { code: 'gu', label: 'ગુજરાતી (Gujarati) — coming soon' },
-  { code: 'kn', label: 'ಕನ್ನಡ (Kannada) — coming soon' },
-  { code: 'ml', label: 'മലയാളം (Malayalam) — coming soon' },
-  { code: 'pa', label: 'ਪੰਜਾਬੀ (Punjabi) — coming soon' },
-  { code: 'or', label: 'ଓଡ଼ିଆ (Odia) — coming soon' },
-  { code: 'as', label: 'অসমীয়া (Assamese) — coming soon' },
-  { code: 'ur', label: 'اردو (Urdu) — coming soon' },
-  { code: 'ks', label: 'कॉशुर (Kashmiri) — coming soon' },
-  { code: 'sd', label: 'سنڌي (Sindhi) — coming soon' },
-  { code: 'ne', label: 'नेपाली (Nepali) — coming soon' },
-  { code: 'kok', label: 'कोंकणी (Konkani) — coming soon' },
-  { code: 'mni', label: 'মৈতৈলোন্ (Manipuri) — coming soon' },
-  { code: 'bo', label: 'བོད་སྐད (Bodo) — coming soon' },
-  { code: 'doi', label: 'डोगरी (Dogri) — coming soon' },
-  { code: 'mai', label: 'मैथिली (Maithili) — coming soon' },
-  { code: 'sat', label: 'ᱥᱟᱱᱛᱟᱲᱤ (Santali) — coming soon' },
-  { code: 'sa', label: 'संस्कृत (Sanskrit) — coming soon' },
+  { code: 'bn', label: 'বাংলা (Bengali)' },
+  { code: 'te', label: 'తెలుగు (Telugu)' },
+  { code: 'gu', label: 'ગુજરાતી (Gujarati)' },
+  { code: 'kn', label: 'ಕನ್ನಡ (Kannada)' },
+  { code: 'ml', label: 'മലയാളം (Malayalam)' },
+  { code: 'pa', label: 'ਪੰਜਾਬੀ (Punjabi)' },
+  { code: 'or', label: 'ଓଡ଼ିଆ (Odia)' },
+  { code: 'as', label: 'অসমীয়া (Assamese)' },
+  { code: 'ur', label: 'اردو (Urdu)' },
+  { code: 'ne', label: 'नेपाली (Nepali)' },
+  { code: 'kok', label: 'कोंकणी (Konkani)' },
+  { code: 'sa', label: 'संस्कृत (Sanskrit)' },
+  { code: 'sd', label: 'سنڌي (Sindhi)' },
+  { code: 'ks', label: 'कॉशुर (Kashmiri)' },
+  { code: 'mai', label: 'मैथिली (Maithili)' },
+  { code: 'doi', label: 'डोगरी (Dogri)' },
+  { code: 'mni', label: 'মৈতৈলোন্ (Manipuri)' },
+  { code: 'bo', label: 'བོད་སྐད (Bodo)' },
+  { code: 'sat', label: 'ᱥᱟᱱᱛᱟᱲᱤ (Santali)' },
 ]
 
-const supportedLanguages = ['en', 'hi', 'mr', 'ta']
+const supportedStatic = ['en', 'hi', 'mr', 'ta']
 const LanguageContext = createContext()
 
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(localStorage.getItem('localpulse_lang') || 'en')
+  const [dynamicCache, setDynamicCache] = useState(() => {
+    const saved = localStorage.getItem('localpulse_translation_cache')
+    return saved ? JSON.parse(saved) : {}
+  })
+  const [, forceRerender] = useState(0)
 
   function changeLanguage(code) {
-    if (!supportedLanguages.includes(code)) {
-      alert('This language is coming soon! Showing English for now.')
-      setLang('en')
-      localStorage.setItem('localpulse_lang', 'en')
-      return
-    }
     setLang(code)
     localStorage.setItem('localpulse_lang', code)
   }
 
+  async function fetchTranslation(text, targetLang, cacheKey) {
+    try {
+      const res = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`
+      )
+      const data = await res.json()
+      const translated = data?.responseData?.translatedText
+      if (translated && translated.toLowerCase() !== text.toLowerCase()) {
+        setDynamicCache((prev) => {
+          const updated = { ...prev, [cacheKey]: translated }
+          localStorage.setItem('localpulse_translation_cache', JSON.stringify(updated))
+          return updated
+        })
+        forceRerender((n) => n + 1)
+      }
+    } catch {
+      // Silent fail — keep showing English for this string
+    }
+  }
+
   function t(key) {
-    return translations[lang]?.[key] || translations.en[key] || key
+    const englishText = translations.en[key] || key
+
+    if (supportedStatic.includes(lang)) {
+      return translations[lang]?.[key] || englishText
+    }
+
+    const cacheKey = `${lang}:${englishText}`
+    if (dynamicCache[cacheKey]) return dynamicCache[cacheKey]
+
+    fetchTranslation(englishText, lang, cacheKey)
+    return englishText
   }
 
   return (
