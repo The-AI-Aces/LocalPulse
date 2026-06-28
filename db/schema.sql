@@ -1,15 +1,11 @@
--- Enable PostGIS: this lets us do "find things near this point" queries later
-create extension if not exists postgis;
 
--- Profiles table: one row per user
+create extension if not exists postgis;
 create table if not exists profiles (
   id uuid primary key references auth.users(id),
   name text,
   is_authority boolean default false,
   created_at timestamp default now()
 );
-
--- Issues table: the core civic reports
 create table if not exists issues (
   id uuid primary key default gen_random_uuid(),
   reporter_id uuid references profiles(id),
@@ -22,8 +18,6 @@ create table if not exists issues (
   is_anonymous boolean default false,
   created_at timestamp default now()
 );
-
--- Comments on issues
 create table if not exists comments (
   id uuid primary key default gen_random_uuid(),
   issue_id uuid references issues(id) on delete cascade,
@@ -31,15 +25,11 @@ create table if not exists comments (
   text text not null,
   created_at timestamp default now()
 );
-
--- Upvotes: one row per (issue, user) pair, prevents double-voting
 create table if not exists upvotes (
   issue_id uuid references issues(id) on delete cascade,
   user_id uuid references profiles(id),
   primary key (issue_id, user_id)
 );
-
--- Events / announcements
 create table if not exists events (
   id uuid primary key default gen_random_uuid(),
   org_name text,
@@ -50,8 +40,6 @@ create table if not exists events (
   event_date date,
   created_at timestamp default now()
 );
-
--- Service provider directory
 create table if not exists service_providers (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -61,8 +49,6 @@ create table if not exists service_providers (
   lat double precision not null,
   lng double precision not null
 );
-
--- Notifications
 create table if not exists notifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references profiles(id),
